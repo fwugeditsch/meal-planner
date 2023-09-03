@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essensplaner</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Verknüpfung zur CSS-Datei -->
+</head>
+<body>
+    <h1>Essensplaner</h1>
+    <div class="settings">
+        <label for="days">Anzahl der Tage:</label>
+        <input type="number" id="days" min="1" max="7"> <!-- Eingabe für die Anzahl der Tage -->
+        
+        <label for="seasonal">Anzahl der Tage mit saisonalen Zutaten:</label>
+        <input type="number" id="seasonal" min="0" max="7"> <!-- Eingabe für die Anzahl der Tage mit saisonalen Zutaten -->
+    </div>
+
+    <div class="ingredients">
+        <h2>Saisonale Zutaten:</h2>
+        <ul>
+            <!-- Hier kannst du dynamisch die saisonalen Zutaten hinzufügen -->
+            <li><input type="checkbox" id="ingredient1"> <label for="ingredient1">Tomaten</label></li>
+            <li><input type="checkbox" id="ingredient2"> <label for="ingredient2">Gurken</label></li>
+            <!-- Füge weitere saisonale Zutaten hinzu -->
+        </ul>
+    </div>
+
+    <button id="generatePlan">Essensplan generieren</button> <!-- Button, um den Essensplan zu generieren -->
+
+    <div class="mealPlan">
+        <!-- Hier wird der generierte Essensplan angezeigt -->
+    </div>
+
+    <script src="script.js"></script> <!-- Verknüpfung zur JavaScript-Datei -->
+</body>
+</html>
