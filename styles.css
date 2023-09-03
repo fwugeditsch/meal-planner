@@ -45,3 +45,19 @@ button:hover {
 .mealPlan {
     margin-top: 20px;
 }
+
+/* Stil für den grünen Button */
+#savePlan {
+    background-color: green; /* Hintergrundfarbe auf Grün setzen */
+    color: white; /* Textfarbe auf Weiß setzen */
+    padding: 10px 20px; /* Innenabstand festlegen */
+    border: none; /* Rand entfernen */
+    cursor: pointer; /* Zeiger-Cursor für die Interaktion */
+    display: none; /* Standardmäßig ausgeblendet */
+    margin: 0 auto; /* Zentriert horizontal */
+}
+
+/* Ändere den Stil bei Hover (Maus darüber) */
+#savePlan:hover {
+    background-color: darkgreen; /* Dunkleres Grün bei Hover */
+}

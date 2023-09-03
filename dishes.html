@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerichteverwaltung</title>
+    <link rel="stylesheet" href="dishes_styles.css"> <!-- Anpassung des CSS-Verweises -->
+
+    <style>
+        .ingredient {
+            display: block; /* Stellt sicher, dass die Zutatenfelder untereinander angeordnet sind */
+            margin-bottom: 10px; /* Fügt Abstand zwischen den Zutatenfeldern hinzu */
+        }
+    </style>
+
+
+</head>
+<body>
+    <h1>Gerichteverwaltung</h1>
+
+    <!-- Formular zum Hinzufügen eines neuen Gerichts -->
+    <div id="addDishForm">
+        <h2>Neues Gericht hinzufügen</h2>
+        <input type="text" id="dishName" placeholder="Name des Gerichts">
+        <div id="ingredientInputs"> <!-- Hier werden die Zutaten-Textfelder dynamisch hinzugefügt -->
+            <input type="text" class="ingredient" placeholder="Zutat 1">
+        </div>
+        <button onclick="addIngredientField()">Weitere Zutat hinzufügen</button>
+        <button onclick="addDish()">Speichern</button>
+    </div>
+
+    <script>
+        // Funktion zum Hinzufügen eines weiteren Zutaten-Textfelds
+        function addIngredientField() {
+            const ingredientInputs = document.getElementById('ingredientInputs');
+            const newIngredientInput = document.createElement('input');
+            newIngredientInput.type = 'text';
+            newIngredientInput.className = 'ingredient';
+            newIngredientInput.placeholder = 'Zutat ' + (ingredientInputs.childElementCount + 1);
+            ingredientInputs.appendChild(newIngredientInput);
+        }
+
+        // ... restlicher JavaScript-Code ...
+    </script>
+
+    <!-- Schön platzierte Schaltfläche zum Zurückkehren zu "index.html" -->
+    <button id="goBack" onclick="redirectToIndexPage()">Zurück zum Essensplaner</button>
+
+    <script src="script.js"></script> <!-- Verknüpfung zur JavaScript-Datei -->
+
+    <script>
+        function redirectToIndexPage() {
+            // Weiterleitung zur "index.html"-Seite
+            window.location.href = "index.html";
+        }
+    </script>
+
+</body>
+</html>

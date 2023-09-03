@@ -28,10 +28,26 @@
 
     <button id="generatePlan">Essensplan generieren</button> <!-- Button, um den Essensplan zu generieren -->
 
+    <!-- Schön platzierte Schaltfläche zum Weiterleiten zu "dishes.html" -->
+    <button id="viewDishes" onclick="redirectToDishesPage()">Gerichte verwalten</button>
+
     <div class="mealPlan">
         <!-- Hier wird der generierte Essensplan angezeigt -->
     </div>
 
     <script src="script.js"></script> <!-- Verknüpfung zur JavaScript-Datei -->
+
+    <script>
+        function redirectToDishesPage() {
+            // Weiterleitung zur "dishes.html"-Seite
+            window.location.href = "dishes.html";
+        }
+    </script>
+
+    <!-- Schaltfläche zum Speichern des Essensplans (standardmäßig ausgeblendet) -->
+    <button id="savePlan" onclick="saveMealPlan()" style="display: none;">Essensplan speichern</button>
+
+
 </body>
 </html>
+

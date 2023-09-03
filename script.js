@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const daysInput = document.getElementById("days");
     const seasonalDaysInput = document.getElementById("seasonal");
     const ingredientsInput = document.querySelectorAll('input[type="checkbox"]');
+    const generatePlanButton = document.getElementById("generatePlan");
+    const mealPlan = document.querySelector(".mealPlan");
+    const savePlanButton = document.getElementById("savePlan"); // Schaltfläche zum Speichern des Essensplans hinzufügen
     
     // Funktion zur Überprüfung und Aktualisierung der saisonalen Zutaten-Eingabe
     function updateSeasonalInput() {
@@ -25,13 +28,21 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialisierung
     updateSeasonalInput();
     
-    // Hier kannst du den Code zum Generieren des Essensplans hinzufügen
-    const generatePlanButton = document.getElementById("generatePlan");
-    const mealPlan = document.querySelector(".mealPlan");
-    
-    generatePlanButton.addEventListener("click", function () {
+    // Funktion zum Generieren des Essensplans
+    function generateMealPlan() {
         // Hier generierst du den Essensplan basierend auf den Eingaben
         // und zeigst ihn im "mealPlan"-Element an
         mealPlan.textContent = "Hier wird der Essensplan angezeigt.";
-    });
+
+        // Anzeigen der Schaltfläche zum Speichern des Essensplans
+        showSaveButton();
+    }
+
+    // Funktion zum Anzeigen der Schaltfläche zum Speichern des Essensplans
+    function showSaveButton() {
+        savePlanButton.style.display = "block"; // Zeige die Schaltfläche an
+    }
+
+    // Eventlistener für das Generieren des Essensplans
+    generatePlanButton.addEventListener("click", generateMealPlan);
 });
