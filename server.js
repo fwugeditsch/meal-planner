@@ -1,12 +1,72 @@
 const express = require('express');
+const { Sequelize } = require('sequelize');
+
 const app = express();
 const port = 3000;
 
-// Statische Dateien aus dem aktuellen Verzeichnis bereitstellen
-app.use(express.static(__dirname));
+// Verbindung zur SQLite-Datenbank herstellen
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: 'mealplanner.db'
+});
+
+// Middleware für JSON-Anfragen
+app.use(express.json());
+app.use(express.static(__dirname)); // Hier wird das Rootverzeichnis für statische Dateien gesetzt
+
+
+// Sequelize-Modell für Gerichte (falls du Sequelize verwendest)
+const Dish = sequelize.define('Dish', {
+  name: {
+    type: Sequelize.STRING
+  },
+  ingredients: {
+    type: Sequelize.STRING
+  }
+}, {
+  timestamps: false // Deaktiviere die Verwendung von Timestamp-Spalten
+});
+
+
+// API-Endpunkt zum Hinzufügen eines neuen Gerichts
+app.post('/api/dishes', async (req, res) => {
+  try {
+    const { name, ingredients } = req.body;
+
+    // Code zum Hinzufügen des Gerichts in der Datenbank
+    await Dish.create({
+      name: name,
+      ingredients: ingredients.join(', '), // Falls die Zutaten als Array gespeichert werden
+    });
+
+    res.status(201).send('Gericht wurde erfolgreich hinzugefügt.');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Hinzufügen des Gerichts.');
+  }
+});
+
+// API-Endpunkt zum Abrufen aller gespeicherten Gerichte
+app.get('/api/dishes', async (req, res) => {
+  try {
+    const dishes = await Dish.findAll(); // Abrufen aller Gerichte aus der Datenbank
+    res.json(dishes); // Senden der Gerichte als JSON-Antwort
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Abrufen der Gerichte');
+  }
+});
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html'); // Passe den Pfad an den Speicherort deiner index.html-Datei an
+});
+
+// Weitere API-Endpunkte für deine Anwendung...
 
 // Server starten
-app.listen(port, () => {
-  console.log(`Der Server läuft auf Port ${port}`);
+sequelize.sync().then(() => {
+  app.listen(port, () => {
+    console.log(`Der Server läuft auf Port ${port}`);
+  });
 });
 

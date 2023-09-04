@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Essensplaner</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Verknüpfung zur CSS-Datei -->
+    <link rel="stylesheet" href="styles.css"> <!-- Aktualisierter Pfad zur CSS-Datei -->
+
 </head>
 <body>
     <h1>Essensplaner</h1>
     <div class="settings">
         <label for="days">Anzahl der Tage:</label>
         <input type="number" id="days" min="1" max="7"> <!-- Eingabe für die Anzahl der Tage -->
-        
+
         <label for="seasonal">Anzahl der Tage mit saisonalen Zutaten:</label>
         <input type="number" id="seasonal" min="0" max="7"> <!-- Eingabe für die Anzahl der Tage mit saisonalen Zutaten -->
     </div>
@@ -26,26 +27,146 @@
         </ul>
     </div>
 
-    <button id="generatePlan">Essensplan generieren</button> <!-- Button, um den Essensplan zu generieren -->
+    <button id="generatePlan" onclick="generateMealPlan()">Essensplan generieren</button> <!-- Button, um den Essensplan zu generieren -->
+
+    <!-- Hier wird die äußere Tabelle für den Essensplan erstellt -->
+    <table class="outer-table">
+        <thead>
+            <tr>
+                <th>Tag</th>
+                <th>Name des Gerichts</th>
+                <th>Zutaten</th>
+            </tr>
+        </thead>
+        <tbody id="mealPlanTable">
+            <!-- Hier werden die Einträge für den Essensplan dynamisch hinzugefügt -->
+        </tbody>
+    </table>
+
+
+
+    <!-- Schaltfläche zum Speichern des Essensplans -->
+    <button id="savePlan" onclick="saveMealPlan()" style="display: none;">Essensplan speichern</button>
 
     <!-- Schön platzierte Schaltfläche zum Weiterleiten zu "dishes.html" -->
     <button id="viewDishes" onclick="redirectToDishesPage()">Gerichte verwalten</button>
 
-    <div class="mealPlan">
-        <!-- Hier wird der generierte Essensplan angezeigt -->
-    </div>
-
-    <script src="script.js"></script> <!-- Verknüpfung zur JavaScript-Datei -->
+    <!-- ... (vorheriger HTML-Code) ... -->
 
     <script>
+
+        // Vor dem Aufrufen der generateMealPlan-Funktion die Gerichte aus der Datenbank abrufen und in availableDishes speichern
+        let availableDishes = [];
+
+        // Hier eine Funktion zum Abrufen aller Gerichte aus der Datenbank
+        function fetchAvailableDishes() {
+            fetch('/api/dishes') // Stelle sicher, dass dies dem tatsächlichen Pfad zu deinem API-Endpunkt entspricht
+                .then(response => response.json())
+                .then(data => {
+                    availableDishes = data; // Speichere die Gerichte im availableDishes-Array
+                })
+                .catch(error => {
+                    console.error('Fehler beim Abrufen der Gerichte aus der Datenbank:', error);
+                });
+        }
+
+        // Funktion zum Verstecken der Schaltfläche zum Speichern des Essensplans
+        function hideSaveButton() {
+            const savePlanButton = document.getElementById('savePlan');
+            savePlanButton.style.display = 'none';
+        }
+
+        // Fisher-Yates-Shuffle-Algorithmus für das zufällige Mischen eines Arrays
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function generateMealPlan() {
+            const numberOfDays = parseInt(document.getElementById('days').value);
+            const seasonalDays = parseInt(document.getElementById('seasonal').value);
+
+            // Überprüfe, ob genügend Gerichte verfügbar sind
+            if (availableDishes.length < numberOfDays) {
+                alert('Nicht genügend Gerichte in der Datenbank verfügbar.');
+                hideSaveButton();
+                return;
+            }
+
+            const mealPlan = [];
+
+            // Kopiere die verfügbaren Gerichte in ein neues Array
+            const remainingDishes = [...availableDishes];
+
+            // Mische das Array, um die Reihenfolge der Gerichte zufällig zu machen
+            shuffleArray(remainingDishes);
+
+            // Generiere den Essensplan
+            for (let i = 0; i < numberOfDays; i++) {
+                if (remainingDishes.length === 0) {
+                    alert('Nicht genügend einzigartige Gerichte in der Datenbank verfügbar.');
+                    hideSaveButton();
+                    return;
+                }
+
+                // Wähle ein zufälliges Gericht aus dem verbleibenden Array aus
+                const selectedDish = remainingDishes.pop();
+                mealPlan.push(selectedDish);
+            }
+
+            // Überprüfen, ob ein gültiger Essensplan erstellt wurde
+            if (mealPlan.length === numberOfDays) {
+                showSaveButton();
+
+                // Zeige die Tabelle an, nachdem der Essensplan generiert wurde
+                const mealPlanTable = document.getElementById('mealPlanTable');
+                mealPlanTable.style.display = 'table'; // Ändere den Anzeigestil auf 'table'
+            } else {
+                // Falls nicht genügend Gerichte vorhanden sind, verstecke die Speichern-Schaltfläche
+                hideSaveButton();
+            }
+            // Anzeigen des Essensplans in der Tabelle
+            displayMealPlan(mealPlan);
+        }
+
+        // Funktion zum Anzeigen des Essensplans in der Tabelle
+        function displayMealPlan(mealPlan) {
+            const mealPlanTable = document.getElementById('mealPlanTable'); // Auswahl der Tabellen-Körper
+
+            // Lösche vorhandene Einträge in der Tabelle
+            mealPlanTable.innerHTML = '';
+
+            // Füge die Gerichte aus dem Essensplan zur Tabelle hinzu
+            mealPlan.forEach((dish, index) => {
+                const row = mealPlanTable.insertRow(index); // Neue Zeile in der Tabelle
+                const dayCell = row.insertCell(0); // Zelle für den Tag
+                const nameCell = row.insertCell(1); // Zelle für den Namen des Gerichts
+                const ingredientsCell = row.insertCell(2); // Zelle für die Zutaten
+
+                // Setze den Inhalt der Zellen
+                dayCell.textContent = `Tag ${index + 1}`;
+                nameCell.textContent = dish.name;
+                ingredientsCell.textContent = dish.ingredients;
+            });
+        }
+
+        // Funktion zum Anzeigen der Schaltfläche zum Speichern des Essensplans
+        function showSaveButton() {
+            const savePlanButton = document.getElementById('savePlan');
+            savePlanButton.style.display = 'block'; // Zeige die Schaltfläche an
+        }
+
+        // Funktion zum Weiterleiten zur "dishes.html"-Seite
         function redirectToDishesPage() {
             // Weiterleitung zur "dishes.html"-Seite
             window.location.href = "dishes.html";
         }
-    </script>
 
-    <!-- Schaltfläche zum Speichern des Essensplans (standardmäßig ausgeblendet) -->
-    <button id="savePlan" onclick="saveMealPlan()" style="display: none;">Essensplan speichern</button>
+        // Rufe die Funktion fetchAvailableDishes auf, um die verfügbaren Gerichte aus der Datenbank abzurufen
+        fetchAvailableDishes();
+    </script>
 
 </body>
 </html>

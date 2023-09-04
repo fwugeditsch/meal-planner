@@ -42,9 +42,6 @@ button:hover {
     background-color: #0056b3;
 }
 
-.mealPlan {
-    margin-top: 20px;
-}
 
 /* Stil für den grünen Button */
 #savePlan {
@@ -60,4 +57,34 @@ button:hover {
 /* Ändere den Stil bei Hover (Maus darüber) */
 #savePlan:hover {
     background-color: darkgreen; /* Dunkleres Grün bei Hover */
+}
+
+/* Zentriere die äußere Tabelle und setze sichtbare Ränder */
+.outer-table {
+    margin: 0 auto;
+    border-collapse: collapse;
+    width: 30%; /* Breite der äußeren Tabelle anpassen */
+    border: 2px solid #000;
+}
+
+/* Setze Ränder für Tabellenzellen und Textausrichtung in der äußeren Tabelle */
+.outer-table th, .outer-table td {
+    border: 1px solid #000; /* Setzt einen Rahmen um die Zellen */
+    padding: 8px; /* Fügt Innenabstand für Zellen hinzu */
+    text-align: left; /* Linksbündige Ausrichtung des Textes */
+}
+
+/* Style für Tabellenkopfzeile (thead) */
+.outer-table thead {
+    background-color: #f2f2f2; /* Hintergrundfarbe für den Tabellenkopf */
+}
+
+/* Style für Tabellenzeilen (tr) */
+.outer-table tbody tr {
+    background-color: #ffffff; /* Hintergrundfarbe für Zeilen im tbody */
+}
+
+/* Stil für die Zellen in der äußeren Tabelle */
+.outer-table th, .outer-table td {
+    text-align: left; /* Linksbündige Ausrichtung des Textes für die inneren Zellen */
 }
