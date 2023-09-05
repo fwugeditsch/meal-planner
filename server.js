@@ -83,6 +83,30 @@ app.delete('/api/dishes/:id', async (req, res) => {
   }
 });
 
+// API-Endpunkt zum Abrufen aller unterschiedlichen Zutaten
+app.get('/api/ingredients', async (req, res) => {
+  try {
+    const dishes = await Dish.findAll();
+
+    // Extrahieren und aufteilen der Zutaten aus den Gerichten
+    const uniqueIngredients = new Set(); // Verwenden Sie ein Set, um doppelte Zutaten zu verhindern
+
+    dishes.forEach((dish) => {
+      const dishIngredients = dish.ingredients.split(',').map((ingredient) => ingredient.trim());
+      dishIngredients.forEach((ingredient) => {
+        uniqueIngredients.add(ingredient);
+      });
+    });
+
+    res.json(Array.from(uniqueIngredients));
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Abrufen der Zutaten');
+  }
+});
+
+
+
 // Weitere API-Endpunkte für deine Anwendung...
 
 // Server starten

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Essensplaner</title>
     <link rel="stylesheet" href="styles.css"> <!-- Aktualisierter Pfad zur CSS-Datei -->
-
+    <script src="multiselect-dropdown.js" ></script>
 </head>
 <body>
     <h1>Essensplaner</h1>
@@ -21,10 +21,10 @@
     <div class="ingredients">
         <h2>Saisonale Zutaten:</h2>
         <ul>
-            <!-- Hier kannst du dynamisch die saisonalen Zutaten hinzufügen -->
-            <li><input type="checkbox" id="ingredient1"> <label for="ingredient1">Tomaten</label></li>
-            <li><input type="checkbox" id="ingredient2"> <label for="ingredient2">Gurken</label></li>
-            <!-- Füge weitere saisonale Zutaten hinzu -->
+            <select multiple id="seasonalIngredients">
+                <!-- Ihre Dropdown-Optionen hier -->
+            </select>
+              
         </ul>
     </div>
 
@@ -86,8 +86,33 @@
             const seasonalDays = parseInt(document.getElementById('seasonal').value);
 
             // Überprüfe, ob genügend Gerichte verfügbar sind
-            if (availableDishes.length < numberOfDays) {
+            if (!availableDishes || availableDishes.length === 0 || availableDishes.length < numberOfDays) {
                 alert('Nicht genügend Gerichte in der Datenbank verfügbar.');
+                hideSaveButton();
+                return;
+            }
+
+            // Sammle alle saisonalen Zutaten aus dem Dropdown-Menü
+            const selectedSeasonalIngredients = new Set();
+            const seasonalIngredientsDropdown = document.getElementById('seasonalIngredients');
+            for (const option of seasonalIngredientsDropdown.options) {
+                if (option.selected) {
+                    selectedSeasonalIngredients.add(option.value);
+                }
+            }
+
+            // Überprüfe, ob saisonale Zutaten ausgewählt wurden
+            if (selectedSeasonalIngredients.size === 0 && seasonalDays > 0) {
+                alert('Bitte wähle saisonale Zutaten aus.');
+                return;
+            }
+
+            // Erzeuge eine Liste von Gerichten, die die saisonalen Zutaten enthalten
+            const seasonalDishes = selectDishesWithSeasonalIngredients(availableDishes, selectedSeasonalIngredients, seasonalDays);
+
+            // Überprüfe, ob genügend saisonale Gerichte verfügbar sind
+            if (seasonalDays > 0 && (!seasonalDishes || seasonalDishes.length < seasonalDays)) {
+                alert('Nicht genügend verschiedene Gerichte mit den ausgewählten saisonalen Zutaten verfügbar.');
                 hideSaveButton();
                 return;
             }
@@ -100,8 +125,25 @@
             // Mische das Array, um die Reihenfolge der Gerichte zufällig zu machen
             shuffleArray(remainingDishes);
 
-            // Generiere den Essensplan
-            for (let i = 0; i < numberOfDays; i++) {
+            // Mische die saisonalen Gerichte
+            shuffleArray(seasonalDishes);
+
+            // Füge die saisonalen Gerichte zum Essensplan hinzu
+            mealPlan.push(...seasonalDishes);
+
+            // Entferne die saisonalen Gerichte aus den verbleibenden Gerichten
+            seasonalDishes.forEach((dish) => {
+                const index = remainingDishes.findIndex((remainingDish) => remainingDish.id === dish.id);
+                if (index !== -1) {
+                    remainingDishes.splice(index, 1);
+                }
+            });
+
+            // Mische die restlichen Gerichte
+            shuffleArray(remainingDishes);
+
+            // Generiere den restlichen Teil des Essensplans
+            for (let i = seasonalDays; i < numberOfDays; i++) {
                 if (remainingDishes.length === 0) {
                     alert('Nicht genügend einzigartige Gerichte in der Datenbank verfügbar.');
                     hideSaveButton();
@@ -124,9 +166,41 @@
                 // Falls nicht genügend Gerichte vorhanden sind, verstecke die Speichern-Schaltfläche
                 hideSaveButton();
             }
+
+            // Gerichte innerhalb des Essensplans mischen
+            shuffleArray(mealPlan);
+
             // Anzeigen des Essensplans in der Tabelle
             displayMealPlan(mealPlan);
         }
+
+
+
+
+
+
+        function selectDishesWithSeasonalIngredients(availableDishes, selectedSeasonalIngredients, numberOfDays) {
+            // Sammle alle Gerichte, die mindestens eine saisonale Zutat enthalten
+            const dishesWithSeasonalIngredients = availableDishes.filter((dish) => {
+                if (!dish.ingredients) {
+                    return false;
+                }
+                const ingredientsArray = dish.ingredients.split(', ');
+                return ingredientsArray.some((ingredient) => selectedSeasonalIngredients.has(ingredient));
+            });
+
+            // Überprüfe, ob genügend Gerichte für die Anforderung vorhanden sind
+            if (dishesWithSeasonalIngredients.length < numberOfDays) {
+                return null; // Nicht genügend Gerichte vorhanden
+            }
+
+            // Mische das Array, um die Reihenfolge der Gerichte zufällig zu machen
+            shuffleArray(dishesWithSeasonalIngredients);
+
+            // Wähle die ersten "numberOfDays" Gerichte aus dem gemischten Array aus
+            return dishesWithSeasonalIngredients.slice(0, numberOfDays);
+        }
+
 
         // Funktion zum Anzeigen des Essensplans in der Tabelle
         function displayMealPlan(mealPlan) {
@@ -233,6 +307,50 @@
             window.location.href = "dishes.html";
         }
 
+        // Funktion zum Abrufen der Zutaten und Befüllen des Dropdown-Menüs
+        async function fillSeasonalIngredientsDropdown() {
+            const dropdown = document.getElementById('seasonalIngredients');
+
+            // API-Aufruf, um alle unterschiedlichen Zutaten abzurufen
+            try {
+                const response = await fetch('/api/ingredients');
+                let ingredients = await response.json();
+
+                // Alphabetische Sortierung der Zutaten in aufsteigender Reihenfolge
+                ingredients = ingredients.sort((a, b) => a.localeCompare(b));
+
+                // Löschen Sie alle vorhandenen Optionen im Dropdown-Menü
+                dropdown.innerHTML = '';
+
+                // Füllen Sie das Dropdown-Menü mit den alphabetisch sortierten Zutaten
+                ingredients.forEach((ingredient) => {
+                const option = document.createElement('option');
+                option.value = ingredient;
+                option.textContent = ingredient;
+                dropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Fehler beim Abrufen der Zutaten:', error);
+            }
+        }
+
+
+        function getSelectedIngredients() {
+            const dropdown = document.getElementById('seasonalIngredients');
+            const selectedIngredients = [];
+            for (let i = 0; i < dropdown.options.length; i++) {
+                if (dropdown.options[i].selected) {
+                selectedIngredients.push(dropdown.options[i].value);
+                }
+            }
+            // Hier haben Sie die ausgewählten Zutaten im Array selectedIngredients
+            console.log('Ausgewählte Zutaten:', selectedIngredients);
+            // Fügen Sie den Code hinzu, um die ausgewählten Zutaten weiter zu verwenden
+        }
+
+
+        // Rufen Sie die Funktion zum Befüllen des Dropdown-Menüs auf
+        fillSeasonalIngredientsDropdown();
         // Rufe die Funktion fetchAvailableDishes auf, um die verfügbaren Gerichte aus der Datenbank abzurufen
         fetchAvailableDishes();
     </script>

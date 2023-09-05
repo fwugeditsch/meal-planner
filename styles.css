@@ -110,3 +110,11 @@ button:hover {
     /* Button soll keine Ränder haben */
     border: none;
 }
+
+#seasonalIngredients {
+    width: 200px; /* Ändern Sie die Breite nach Bedarf */
+    /* die Einträge sollen sich alle linksbündig befinden */
+    text-align: left;
+
+}
+  

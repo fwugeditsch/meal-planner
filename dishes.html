@@ -78,6 +78,7 @@
             const dishName = dishNameInput.value.trim(); // Name des Gerichts
             const ingredientInputs = document.querySelectorAll('.ingredient');
             const ingredients = [];
+            const continueQuery = true;
 
             // Filtere leere Zutatenfelder heraus und trime Whitespaces
             ingredientInputs.forEach(input => {
@@ -89,6 +90,23 @@
 
             if (dishName === '' || ingredients.length === 0) {
                 alert('Bitte fülle alle Felder aus.');
+                return;
+            }
+
+            // wenn es bereits ein Gericht mit dem gleichen Namen gibt, wird eine Fehlermeldung ausgegeben
+            const dishesList = document.getElementById('dishesList');
+            const dishes = dishesList.querySelectorAll('.dish');
+            dishes.forEach(dish => {
+                const dishNameElement = dish.querySelector('h3');
+                if (dishNameElement.textContent === dishName) {
+                    alert('Es gibt bereits ein Gericht mit diesem Namen.');
+                    continueQuery = false;
+                    // FUnktion beenedet, wenn es bereits ein Gericht mit dem gleichen Namen gibt
+
+                }
+            });
+
+            if (continueQuery === false) {
                 return;
             }
 
