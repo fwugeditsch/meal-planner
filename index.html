@@ -10,11 +10,12 @@
 <body>
     <h1>Essensplaner</h1>
     <div class="settings">
+        <!-- Tage sollen standardmäßig auf 5 gestellt sein -->
         <label for="days">Anzahl der Tage:</label>
-        <input type="number" id="days" min="1" max="7"> <!-- Eingabe für die Anzahl der Tage -->
+        <input type="number" id="days" min="1" max="7" value="7"> <!-- Eingabe für die Anzahl der Tage -->
 
         <label for="seasonal">Anzahl der Tage mit saisonalen Zutaten:</label>
-        <input type="number" id="seasonal" min="0" max="7"> <!-- Eingabe für die Anzahl der Tage mit saisonalen Zutaten -->
+        <input type="number" id="seasonal" min="0" max="7" value="0"> <!-- Eingabe für die Anzahl der Tage mit saisonalen Zutaten -->
     </div>
 
     <div class="ingredients">
@@ -29,21 +30,17 @@
 
     <button id="generatePlan" onclick="generateMealPlan()">Essensplan generieren</button> <!-- Button, um den Essensplan zu generieren -->
 
+    <br>
+    <br>
+
     <!-- Hier wird die äußere Tabelle für den Essensplan erstellt -->
     <table class="outer-table">
-        <thead>
-            <tr>
-                <th>Tag</th>
-                <th>Name des Gerichts</th>
-                <th>Zutaten</th>
-            </tr>
-        </thead>
         <tbody id="mealPlanTable">
             <!-- Hier werden die Einträge für den Essensplan dynamisch hinzugefügt -->
         </tbody>
     </table>
 
-
+    <br>
 
     <!-- Schaltfläche zum Speichern des Essensplans -->
     <button id="savePlan" onclick="saveMealPlan()" style="display: none;">Essensplan speichern</button>
@@ -138,19 +135,91 @@
             // Lösche vorhandene Einträge in der Tabelle
             mealPlanTable.innerHTML = '';
 
+            // Füge die Überschriften für die erste Zeile hinzu
+            const headerRow = mealPlanTable.insertRow(0);
+            const dayHeaderCell = headerRow.insertCell(0);
+            const nameHeaderCell = headerRow.insertCell(1);
+            const ingredientsHeaderCell = headerRow.insertCell(2);
+            const actionHeaderCell = headerRow.insertCell(3); // Header-Zelle für die Aktion
+
+
+            // Setze die Überschriften
+            dayHeaderCell.textContent = 'Tag';
+            nameHeaderCell.textContent = 'Name';
+            ingredientsHeaderCell.textContent = 'Zutaten';
+            actionHeaderCell.textContent = 'Aktion';
+
             // Füge die Gerichte aus dem Essensplan zur Tabelle hinzu
             mealPlan.forEach((dish, index) => {
-                const row = mealPlanTable.insertRow(index); // Neue Zeile in der Tabelle
+                const row = mealPlanTable.insertRow(index + 1); // Neue Zeile in der Tabelle (+1 für die erste Zeile mit Überschriften)
                 const dayCell = row.insertCell(0); // Zelle für den Tag
                 const nameCell = row.insertCell(1); // Zelle für den Namen des Gerichts
                 const ingredientsCell = row.insertCell(2); // Zelle für die Zutaten
+                const actionCell = row.insertCell(3); // Zelle für die Aktion
 
                 // Setze den Inhalt der Zellen
                 dayCell.textContent = `Tag ${index + 1}`;
                 nameCell.textContent = dish.name;
                 ingredientsCell.textContent = dish.ingredients;
+
+                // Erstelle den Button für die Aktualisierung
+                const updateButton = document.createElement('button');
+                updateButton.textContent = 'Neu';
+                updateButton.addEventListener('click', () => updateDish(index)); // Füge einen Klick-Event-Listener hinzu
+                // CSS Effekt updateButton anwenden
+                updateButton.classList.add('update-button');
+
+                // Füge den Button zur Aktion-Zelle hinzu
+                actionCell.appendChild(updateButton);
             });
         }
+
+        function updateDish(index) {
+            const mealPlan = getMealPlan(); // Hole den aktuellen Essensplan
+
+            // Überprüfe, ob genügend Gerichte verfügbar sind
+            if (availableDishes.length === 0) {
+                alert('Nicht genügend Gerichte in der Datenbank verfügbar.');
+                return;
+            }
+
+            // Wähle ein zufälliges neues Gericht aus den verfügbaren Gerichten aus
+            let newDish;
+            do {
+                const randomIndex = Math.floor(Math.random() * availableDishes.length);
+                newDish = availableDishes[randomIndex];
+            } while (mealPlan.some(dish => dish.name === newDish.name));
+
+            // Ersetze das Gericht im Essensplan an der angegebenen Position (index)
+            mealPlan[index] = newDish;
+
+            // Aktualisiere die Anzeige des Essensplans
+            displayMealPlan(mealPlan);
+        }
+
+        // Funktion zum Holen des aktuellen Essensplans aus der Tabelle
+        function getMealPlan() {
+            const mealPlanTable = document.getElementById('mealPlanTable');
+            const mealPlanRows = mealPlanTable.rows;
+            const mealPlan = [];
+
+            for (let i = 1; i < mealPlanRows.length; i++) { // Starte bei 1, um die Überschriftenzeile zu überspringen
+                const row = mealPlanRows[i];
+                const nameCell = row.cells[1];
+                const ingredientsCell = row.cells[2];
+
+                const dish = {
+                    name: nameCell.textContent,
+                    ingredients: ingredientsCell.textContent,
+                };
+
+                mealPlan.push(dish);
+            }
+
+            return mealPlan;
+        }
+
+
 
         // Funktion zum Anzeigen der Schaltfläche zum Speichern des Essensplans
         function showSaveButton() {

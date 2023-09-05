@@ -42,7 +42,6 @@ button:hover {
     background-color: #0056b3;
 }
 
-
 /* Stil für den grünen Button */
 #savePlan {
     background-color: green; /* Hintergrundfarbe auf Grün setzen */
@@ -63,7 +62,7 @@ button:hover {
 .outer-table {
     margin: 0 auto;
     border-collapse: collapse;
-    width: 30%; /* Breite der äußeren Tabelle anpassen */
+    width: auto; /* Breite der äußeren Tabelle anpassen */
     border: 2px solid #000;
 }
 
@@ -72,19 +71,42 @@ button:hover {
     border: 1px solid #000; /* Setzt einen Rahmen um die Zellen */
     padding: 8px; /* Fügt Innenabstand für Zellen hinzu */
     text-align: left; /* Linksbündige Ausrichtung des Textes */
+    width: min-content;
 }
 
 /* Style für Tabellenkopfzeile (thead) */
 .outer-table thead {
-    background-color: #f2f2f2; /* Hintergrundfarbe für den Tabellenkopf */
+    background-color: #007bff; /* Blauer Hintergrund für den Tabellenkopf */
+    color: white; /* Weiße Schriftfarbe für den Tabellenkopf */
+    font-weight: bold; /* Fett gedruckte Schrift für den Tabellenkopf */
+    text-align: center; /* Zentrierte Ausrichtung des Textes für den Tabellenkopf */
+    width: auto;
 }
 
-/* Style für Tabellenzeilen (tr) */
-.outer-table tbody tr {
-    background-color: #ffffff; /* Hintergrundfarbe für Zeilen im tbody */
+/* Stil für den Tabellenkörper (tbody) */
+.outer-table tbody {
+    text-align: center; /* Zentrierte Ausrichtung des Textes für den Tabellenkörper */
 }
 
-/* Stil für die Zellen in der äußeren Tabelle */
-.outer-table th, .outer-table td {
-    text-align: left; /* Linksbündige Ausrichtung des Textes für die inneren Zellen */
+/* Abwechselnder Stil für Zeilen im Tabellenkörper (tbody) */
+.outer-table tbody tr:nth-child(odd) {
+    background-color: lightblue; /* Blauer Hintergrund für ungerade Zeilen */
+}
+
+.outer-table tbody tr:nth-child(even) {
+    background-color: white; /* Weißer Hintergrund für gerade Zeilen */
+}
+
+/* Stil für die oberste Zeile des Tabellenkörpers (tbody) */
+.outer-table tbody tr:first-child {
+    background-color: lightgreen; /* Roter Hintergrund für die erste Zeile des Tabellenkörpers */
+    font-weight: bold; /* Fett gedruckte Schrift für die erste Zeile des Tabellenkörpers */
+}
+
+/* Stil für die Aktualisieren-Buttons */
+.update-button {
+    /* Button soll sich in der Mittelposition befinden */
+    margin: 0 auto;
+    /* Button soll keine Ränder haben */
+    border: none;
 }

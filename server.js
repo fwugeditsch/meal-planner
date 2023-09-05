@@ -24,8 +24,11 @@ const Dish = sequelize.define('Dish', {
     type: Sequelize.STRING
   }
 }, {
-  timestamps: false // Deaktiviere die Verwendung von Timestamp-Spalten
+  timestamps: false, // Deaktiviere die Verwendung von Timestamp-Spalten
+  primaryKey: true, // Setze das id-Feld als Primärschlüssel
+  autoIncrement: true // Lasse das id-Feld automatisch inkrementieren
 });
+
 
 
 // API-Endpunkt zum Hinzufügen eines neuen Gerichts
@@ -59,6 +62,25 @@ app.get('/api/dishes', async (req, res) => {
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html'); // Passe den Pfad an den Speicherort deiner index.html-Datei an
+});
+
+// API-Endpunkt zum Löschen eines Gerichts anhand seiner ID
+app.delete('/api/dishes/:id', async (req, res) => {
+  try {
+    const dishId = req.params.id;
+
+    // Code zum Löschen des Gerichts aus der Datenbank anhand seiner ID
+    await Dish.destroy({
+      where: {
+        id: dishId
+      }
+    });
+
+    res.status(200).send('Gericht wurde erfolgreich gelöscht.');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Löschen des Gerichts.');
+  }
 });
 
 // Weitere API-Endpunkte für deine Anwendung...
