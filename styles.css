@@ -1,41 +1,73 @@
+/* Globale Stile */
 body {
     font-family: Arial, sans-serif;
     text-align: center;
-    margin: 20px;
+    margin: 0;
+    padding: 0;
 }
 
 h1 {
     color: #333;
 }
 
+/* Header-Stil */
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+}
+
+/* Hauptinhalt */
+main {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Einstellungen */
 .settings {
-    margin-top: 20px;
+    text-align: left;
 }
 
-label {
+.settings label {
     font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
 }
 
-.ingredients {
+.settings select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Saisonale Zutaten */
+.ingredients h2 {
+    font-size: 1.2rem;
     margin-top: 20px;
-}
-
-ul {
-    list-style: none;
-    padding: 0;
-}
-
-li {
     margin-bottom: 10px;
 }
 
+.ingredients select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Button-Stil */
 button {
-    margin-top: 20px;
-    padding: 10px 20px;
     background-color: #007bff;
-    color: #fff;
+    color: white;
+    padding: 10px 20px;
     border: none;
     cursor: pointer;
+    border-radius: 5px;
+    margin-right: 10px;
+    transition: background-color 0.3s ease;
 }
 
 button:hover {
@@ -44,77 +76,67 @@ button:hover {
 
 /* Stil für den grünen Button */
 #savePlan {
-    background-color: green; /* Hintergrundfarbe auf Grün setzen */
-    color: white; /* Textfarbe auf Weiß setzen */
-    padding: 10px 20px; /* Innenabstand festlegen */
-    border: none; /* Rand entfernen */
-    cursor: pointer; /* Zeiger-Cursor für die Interaktion */
-    display: none; /* Standardmäßig ausgeblendet */
-    margin: 0 auto; /* Zentriert horizontal */
+    background-color: green;
 }
 
-/* Ändere den Stil bei Hover (Maus darüber) */
 #savePlan:hover {
-    background-color: darkgreen; /* Dunkleres Grün bei Hover */
+    background-color: darkgreen;
 }
 
-/* Zentriere die äußere Tabelle und setze sichtbare Ränder */
+/* Tabellenstil */
 .outer-table {
-    margin: 0 auto;
+    width: 100%;
     border-collapse: collapse;
-    width: auto; /* Breite der äußeren Tabelle anpassen */
-    border: 2px solid #000;
+    margin-top: 20px;
+    text-align: center;
 }
 
-/* Setze Ränder für Tabellenzellen und Textausrichtung in der äußeren Tabelle */
 .outer-table th, .outer-table td {
-    border: 1px solid #000; /* Setzt einen Rahmen um die Zellen */
-    padding: 8px; /* Fügt Innenabstand für Zellen hinzu */
-    text-align: left; /* Linksbündige Ausrichtung des Textes */
-    width: min-content;
+    border: 1px solid #ccc;
+    padding: 10px;
 }
 
-/* Style für Tabellenkopfzeile (thead) */
-.outer-table thead {
-    background-color: #007bff; /* Blauer Hintergrund für den Tabellenkopf */
-    color: white; /* Weiße Schriftfarbe für den Tabellenkopf */
-    font-weight: bold; /* Fett gedruckte Schrift für den Tabellenkopf */
-    text-align: center; /* Zentrierte Ausrichtung des Textes für den Tabellenkopf */
-    width: auto;
+.outer-table th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
 }
 
-/* Stil für den Tabellenkörper (tbody) */
-.outer-table tbody {
-    text-align: center; /* Zentrierte Ausrichtung des Textes für den Tabellenkörper */
-}
-
-/* Abwechselnder Stil für Zeilen im Tabellenkörper (tbody) */
 .outer-table tbody tr:nth-child(odd) {
-    background-color: lightblue; /* Blauer Hintergrund für ungerade Zeilen */
+    background-color: #f2f2f2;
 }
 
-.outer-table tbody tr:nth-child(even) {
-    background-color: white; /* Weißer Hintergrund für gerade Zeilen */
+/* Body der Tabelle bezüglich Breite maximieren */
+.outer-table tbody td {
+    width: 300px;
 }
 
-/* Stil für die oberste Zeile des Tabellenkörpers (tbody) */
-.outer-table tbody tr:first-child {
-    background-color: lightgreen; /* Roter Hintergrund für die erste Zeile des Tabellenkörpers */
-    font-weight: bold; /* Fett gedruckte Schrift für die erste Zeile des Tabellenkörpers */
+/* Header der Tabelle bezüglich Breite an den Body anpassen */
+.outer-table thead th {
+    width: 1%;
+    white-space: nowrap;
 }
 
-/* Stil für die Aktualisieren-Buttons */
+/* Stil für Aktualisieren-Buttons */
 .update-button {
-    /* Button soll sich in der Mittelposition befinden */
-    margin: 0 auto;
-    /* Button soll keine Ränder haben */
+    background-color: #007bff;
+    color: white;
     border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-#seasonalIngredients {
-    width: 200px; /* Ändern Sie die Breite nach Bedarf */
-    /* die Einträge sollen sich alle linksbündig befinden */
-    text-align: left;
-
+.update-button:hover {
+    background-color: #0056b3;
 }
-  
+
+.button-container {
+    text-align: center;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: flex-end;
+    /* den Container in der Mitte ausrichten */
+;
+}

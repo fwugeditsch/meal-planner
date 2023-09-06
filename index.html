@@ -3,357 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Essensplaner</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Aktualisierter Pfad zur CSS-Datei -->
-    <script src="multiselect-dropdown.js" ></script>
+    <title>
+        Essensplaner
+    </title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Essensplaner</h1>
-    <div class="settings">
-        <!-- Tage sollen standardmäßig auf 5 gestellt sein -->
-        <label for="days">Anzahl der Tage:</label>
-        <input type="number" id="days" min="1" max="7" value="7"> <!-- Eingabe für die Anzahl der Tage -->
+    <header>
+        <!-- Edle Schriftart für den Titel verwenden-->
+        <h1>
+            <p style="font-family: Georgia, 'Times New Roman', Times, serif; font-size: larger;">
+                Essensplaner
+            </p>
+        </h1>
+    </header>
 
-        <label for="seasonal">Anzahl der Tage mit saisonalen Zutaten:</label>
-        <input type="number" id="seasonal" min="0" max="7" value="0"> <!-- Eingabe für die Anzahl der Tage mit saisonalen Zutaten -->
-    </div>
-
-    <div class="ingredients">
-        <h2>Saisonale Zutaten:</h2>
-        <ul>
-            <select multiple id="seasonalIngredients">
-                <!-- Ihre Dropdown-Optionen hier -->
+    <main>
+        <section class="settings">
+            <label for="days">Anzahl der Tage:</label>
+            <select id="days">
+                <option value="1">1 Tag</option>
+                <option value="2">2 Tage</option>
+                <option value="3">3 Tage</option>
+                <option value="4">4 Tage</option>
+                <option value="5" selected>5 Tage</option>
+                <option value="6">6 Tage</option>
+                <option value="7">7 Tage</option>
             </select>
-              
-        </ul>
-    </div>
-
-    <button id="generatePlan" onclick="generateMealPlan()">Essensplan generieren</button> <!-- Button, um den Essensplan zu generieren -->
-
-    <br>
-    <br>
-
-    <!-- Hier wird die äußere Tabelle für den Essensplan erstellt -->
-    <table class="outer-table">
-        <tbody id="mealPlanTable">
-            <!-- Hier werden die Einträge für den Essensplan dynamisch hinzugefügt -->
-        </tbody>
-    </table>
-
-    <br>
-
-    <!-- Schaltfläche zum Speichern des Essensplans -->
-    <button id="savePlan" onclick="saveMealPlan()" style="display: none;">Essensplan speichern</button>
-
-    <!-- Schön platzierte Schaltfläche zum Weiterleiten zu "dishes.html" -->
-    <button id="viewDishes" onclick="redirectToDishesPage()">Gerichte verwalten</button>
-
-    <!-- ... (vorheriger HTML-Code) ... -->
-
-    <script>
-
-        // Vor dem Aufrufen der generateMealPlan-Funktion die Gerichte aus der Datenbank abrufen und in availableDishes speichern
-        let availableDishes = [];
-
-        // Hier eine Funktion zum Abrufen aller Gerichte aus der Datenbank
-        function fetchAvailableDishes() {
-            fetch('/api/dishes') // Stelle sicher, dass dies dem tatsächlichen Pfad zu deinem API-Endpunkt entspricht
-                .then(response => response.json())
-                .then(data => {
-                    availableDishes = data; // Speichere die Gerichte im availableDishes-Array
-                })
-                .catch(error => {
-                    console.error('Fehler beim Abrufen der Gerichte aus der Datenbank:', error);
-                });
-        }
-
-        // Funktion zum Verstecken der Schaltfläche zum Speichern des Essensplans
-        function hideSaveButton() {
-            const savePlanButton = document.getElementById('savePlan');
-            savePlanButton.style.display = 'none';
-        }
-
-        // Fisher-Yates-Shuffle-Algorithmus für das zufällige Mischen eines Arrays
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        function generateMealPlan() {
-            const numberOfDays = parseInt(document.getElementById('days').value);
-            const seasonalDays = parseInt(document.getElementById('seasonal').value);
-
-            // Überprüfe, ob genügend Gerichte verfügbar sind
-            if (!availableDishes || availableDishes.length === 0 || availableDishes.length < numberOfDays) {
-                alert('Nicht genügend Gerichte in der Datenbank verfügbar.');
-                hideSaveButton();
-                return;
-            }
-
-            // Sammle alle saisonalen Zutaten aus dem Dropdown-Menü
-            const selectedSeasonalIngredients = new Set();
-            const seasonalIngredientsDropdown = document.getElementById('seasonalIngredients');
-            for (const option of seasonalIngredientsDropdown.options) {
-                if (option.selected) {
-                    selectedSeasonalIngredients.add(option.value);
-                }
-            }
-
-            // Überprüfe, ob saisonale Zutaten ausgewählt wurden
-            if (selectedSeasonalIngredients.size === 0 && seasonalDays > 0) {
-                alert('Bitte wähle saisonale Zutaten aus.');
-                return;
-            }
-
-            // Erzeuge eine Liste von Gerichten, die die saisonalen Zutaten enthalten
-            const seasonalDishes = selectDishesWithSeasonalIngredients(availableDishes, selectedSeasonalIngredients, seasonalDays);
-
-            // Überprüfe, ob genügend saisonale Gerichte verfügbar sind
-            if (seasonalDays > 0 && (!seasonalDishes || seasonalDishes.length < seasonalDays)) {
-                alert('Nicht genügend verschiedene Gerichte mit den ausgewählten saisonalen Zutaten verfügbar.');
-                hideSaveButton();
-                return;
-            }
-
-            const mealPlan = [];
-
-            // Kopiere die verfügbaren Gerichte in ein neues Array
-            const remainingDishes = [...availableDishes];
-
-            // Mische das Array, um die Reihenfolge der Gerichte zufällig zu machen
-            shuffleArray(remainingDishes);
-
-            // Mische die saisonalen Gerichte
-            shuffleArray(seasonalDishes);
-
-            // Füge die saisonalen Gerichte zum Essensplan hinzu
-            mealPlan.push(...seasonalDishes);
-
-            // Entferne die saisonalen Gerichte aus den verbleibenden Gerichten
-            seasonalDishes.forEach((dish) => {
-                const index = remainingDishes.findIndex((remainingDish) => remainingDish.id === dish.id);
-                if (index !== -1) {
-                    remainingDishes.splice(index, 1);
-                }
-            });
-
-            // Mische die restlichen Gerichte
-            shuffleArray(remainingDishes);
-
-            // Generiere den restlichen Teil des Essensplans
-            for (let i = seasonalDays; i < numberOfDays; i++) {
-                if (remainingDishes.length === 0) {
-                    alert('Nicht genügend einzigartige Gerichte in der Datenbank verfügbar.');
-                    hideSaveButton();
-                    return;
-                }
-
-                // Wähle ein zufälliges Gericht aus dem verbleibenden Array aus
-                const selectedDish = remainingDishes.pop();
-                mealPlan.push(selectedDish);
-            }
-
-            // Überprüfen, ob ein gültiger Essensplan erstellt wurde
-            if (mealPlan.length === numberOfDays) {
-                showSaveButton();
-
-                // Zeige die Tabelle an, nachdem der Essensplan generiert wurde
-                const mealPlanTable = document.getElementById('mealPlanTable');
-                mealPlanTable.style.display = 'table'; // Ändere den Anzeigestil auf 'table'
-            } else {
-                // Falls nicht genügend Gerichte vorhanden sind, verstecke die Speichern-Schaltfläche
-                hideSaveButton();
-            }
-
-            // Gerichte innerhalb des Essensplans mischen
-            shuffleArray(mealPlan);
-
-            // Anzeigen des Essensplans in der Tabelle
-            displayMealPlan(mealPlan);
-        }
-
-
-
-
-
-
-        function selectDishesWithSeasonalIngredients(availableDishes, selectedSeasonalIngredients, numberOfDays) {
-            // Sammle alle Gerichte, die mindestens eine saisonale Zutat enthalten
-            const dishesWithSeasonalIngredients = availableDishes.filter((dish) => {
-                if (!dish.ingredients) {
-                    return false;
-                }
-                const ingredientsArray = dish.ingredients.split(', ');
-                return ingredientsArray.some((ingredient) => selectedSeasonalIngredients.has(ingredient));
-            });
-
-            // Überprüfe, ob genügend Gerichte für die Anforderung vorhanden sind
-            if (dishesWithSeasonalIngredients.length < numberOfDays) {
-                return null; // Nicht genügend Gerichte vorhanden
-            }
-
-            // Mische das Array, um die Reihenfolge der Gerichte zufällig zu machen
-            shuffleArray(dishesWithSeasonalIngredients);
-
-            // Wähle die ersten "numberOfDays" Gerichte aus dem gemischten Array aus
-            return dishesWithSeasonalIngredients.slice(0, numberOfDays);
-        }
-
-
-        // Funktion zum Anzeigen des Essensplans in der Tabelle
-        function displayMealPlan(mealPlan) {
-            const mealPlanTable = document.getElementById('mealPlanTable'); // Auswahl der Tabellen-Körper
-
-            // Lösche vorhandene Einträge in der Tabelle
-            mealPlanTable.innerHTML = '';
-
-            // Füge die Überschriften für die erste Zeile hinzu
-            const headerRow = mealPlanTable.insertRow(0);
-            const dayHeaderCell = headerRow.insertCell(0);
-            const nameHeaderCell = headerRow.insertCell(1);
-            const ingredientsHeaderCell = headerRow.insertCell(2);
-            const actionHeaderCell = headerRow.insertCell(3); // Header-Zelle für die Aktion
-
-
-            // Setze die Überschriften
-            dayHeaderCell.textContent = 'Tag';
-            nameHeaderCell.textContent = 'Name';
-            ingredientsHeaderCell.textContent = 'Zutaten';
-            actionHeaderCell.textContent = 'Aktion';
-
-            // Füge die Gerichte aus dem Essensplan zur Tabelle hinzu
-            mealPlan.forEach((dish, index) => {
-                const row = mealPlanTable.insertRow(index + 1); // Neue Zeile in der Tabelle (+1 für die erste Zeile mit Überschriften)
-                const dayCell = row.insertCell(0); // Zelle für den Tag
-                const nameCell = row.insertCell(1); // Zelle für den Namen des Gerichts
-                const ingredientsCell = row.insertCell(2); // Zelle für die Zutaten
-                const actionCell = row.insertCell(3); // Zelle für die Aktion
-
-                // Setze den Inhalt der Zellen
-                dayCell.textContent = `Tag ${index + 1}`;
-                nameCell.textContent = dish.name;
-                ingredientsCell.textContent = dish.ingredients;
-
-                // Erstelle den Button für die Aktualisierung
-                const updateButton = document.createElement('button');
-                updateButton.textContent = 'Neu';
-                updateButton.addEventListener('click', () => updateDish(index)); // Füge einen Klick-Event-Listener hinzu
-                // CSS Effekt updateButton anwenden
-                updateButton.classList.add('update-button');
-
-                // Füge den Button zur Aktion-Zelle hinzu
-                actionCell.appendChild(updateButton);
-            });
-        }
-
-        function updateDish(index) {
-            const mealPlan = getMealPlan(); // Hole den aktuellen Essensplan
-
-            // Überprüfe, ob genügend Gerichte verfügbar sind
-            if (availableDishes.length === 0) {
-                alert('Nicht genügend Gerichte in der Datenbank verfügbar.');
-                return;
-            }
-
-            // Wähle ein zufälliges neues Gericht aus den verfügbaren Gerichten aus
-            let newDish;
-            do {
-                const randomIndex = Math.floor(Math.random() * availableDishes.length);
-                newDish = availableDishes[randomIndex];
-            } while (mealPlan.some(dish => dish.name === newDish.name));
-
-            // Ersetze das Gericht im Essensplan an der angegebenen Position (index)
-            mealPlan[index] = newDish;
-
-            // Aktualisiere die Anzeige des Essensplans
-            displayMealPlan(mealPlan);
-        }
-
-        // Funktion zum Holen des aktuellen Essensplans aus der Tabelle
-        function getMealPlan() {
-            const mealPlanTable = document.getElementById('mealPlanTable');
-            const mealPlanRows = mealPlanTable.rows;
-            const mealPlan = [];
-
-            for (let i = 1; i < mealPlanRows.length; i++) { // Starte bei 1, um die Überschriftenzeile zu überspringen
-                const row = mealPlanRows[i];
-                const nameCell = row.cells[1];
-                const ingredientsCell = row.cells[2];
-
-                const dish = {
-                    name: nameCell.textContent,
-                    ingredients: ingredientsCell.textContent,
-                };
-
-                mealPlan.push(dish);
-            }
-
-            return mealPlan;
-        }
-
-
-
-        // Funktion zum Anzeigen der Schaltfläche zum Speichern des Essensplans
-        function showSaveButton() {
-            const savePlanButton = document.getElementById('savePlan');
-            savePlanButton.style.display = 'block'; // Zeige die Schaltfläche an
-        }
-
-        // Funktion zum Weiterleiten zur "dishes.html"-Seite
-        function redirectToDishesPage() {
-            // Weiterleitung zur "dishes.html"-Seite
-            window.location.href = "dishes.html";
-        }
-
-        // Funktion zum Abrufen der Zutaten und Befüllen des Dropdown-Menüs
-        async function fillSeasonalIngredientsDropdown() {
-            const dropdown = document.getElementById('seasonalIngredients');
-
-            // API-Aufruf, um alle unterschiedlichen Zutaten abzurufen
-            try {
-                const response = await fetch('/api/ingredients');
-                let ingredients = await response.json();
-
-                // Alphabetische Sortierung der Zutaten in aufsteigender Reihenfolge
-                ingredients = ingredients.sort((a, b) => a.localeCompare(b));
-
-                // Löschen Sie alle vorhandenen Optionen im Dropdown-Menü
-                dropdown.innerHTML = '';
-
-                // Füllen Sie das Dropdown-Menü mit den alphabetisch sortierten Zutaten
-                ingredients.forEach((ingredient) => {
-                const option = document.createElement('option');
-                option.value = ingredient;
-                option.textContent = ingredient;
-                dropdown.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Fehler beim Abrufen der Zutaten:', error);
-            }
-        }
-
-
-        function getSelectedIngredients() {
-            const dropdown = document.getElementById('seasonalIngredients');
-            const selectedIngredients = [];
-            for (let i = 0; i < dropdown.options.length; i++) {
-                if (dropdown.options[i].selected) {
-                selectedIngredients.push(dropdown.options[i].value);
-                }
-            }
-            // Hier haben Sie die ausgewählten Zutaten im Array selectedIngredients
-            console.log('Ausgewählte Zutaten:', selectedIngredients);
-            // Fügen Sie den Code hinzu, um die ausgewählten Zutaten weiter zu verwenden
-        }
-
-
-        // Rufen Sie die Funktion zum Befüllen des Dropdown-Menüs auf
-        fillSeasonalIngredientsDropdown();
-        // Rufe die Funktion fetchAvailableDishes auf, um die verfügbaren Gerichte aus der Datenbank abzurufen
-        fetchAvailableDishes();
-    </script>
-
+            <br>
+            <label for="seasonal">Anzahl der Tage mit saisonalen Zutaten:</label>
+            <select id="seasonal">
+                <option value="0" selected>0 Tage</option>
+                <option value="1">1 Tag</option>
+                <option value="2">2 Tage</option>
+                <option value="3">3 Tage</option>
+                <option value="4">4 Tage</option>
+                <option value="5">5 Tage</option>
+                <option value="6">6 Tage</option>
+                <option value="7">7 Tage</option>
+            </select>
+        </section>
+
+        <section class="ingredients">
+            <h2>Saisonale Zutaten:</h2>
+            <select id="seasonalIngredients" multiple>
+                <!-- Hier werden die Zutaten dynamisch hinzugefügt -->
+            </select>
+        </section>
+
+        <button id="generatePlan" onclick="generateMealPlan()">Essensplan generieren</button>
+
+        <table class="outer-table" id="mealPlanTable">
+            <!-- Hier werden die Gerichte dynamisch hinzugefügt -->
+        </table>
+        
+        <!-- Die beiden Buttons savePlan und viewDishes schön nebeneinander und zentriert darstelle-->
+        <br>
+        <div class="button-container">
+            <button id="savePlan" style="display: none;">Essensplan speichern</button>
+            <button id="viewDishes" onclick="redirectToDishesPage()">Gerichte verwalten</button>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>
