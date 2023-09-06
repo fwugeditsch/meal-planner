@@ -109,3 +109,21 @@ main {
     cursor: pointer;
     margin-top: 5px;
 }
+
+.editNewDishButtons {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 5px;
+    display: inline-block;
+    /* round corners */
+    border-radius: 5px;
+}
+
+/* when hovering over the button */
+.editNewDishButtons:hover {
+    background-color: #0069D9;
+}
