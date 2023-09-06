@@ -173,9 +173,27 @@ function hideSaveButton() {
                 const updateCell = row.insertCell(3);
             
                 numberCell.textContent = index + 1;
+                numberCell.style.fontWeight = 'bold';
                 nameCell.textContent = dish.name;
                 ingredientsCell.textContent = dish.ingredients;
-                updateCell.innerHTML = `<button class="btn btn-primary" onclick="updateDish(${index})">Gericht ändern</button>`;
+                // bild von refreshButton (img/refresh_button.png) als Schaltfläche zum Ändern des Gerichts
+                
+                // Erstellen Sie das img-Element für das Aktualisieren-Bild
+                const updateImage = document.createElement('img');
+                updateImage.src = 'img/refresh_button.png'; // Hier sollte der Pfad zu Ihrem Bild sein
+                updateImage.alt = 'Aktualisieren';
+
+                // Weisen Sie die CSS-Klasse "img-in-cell" zu
+                updateImage.classList.add('img-in-cell');
+
+                // Fügen Sie das Bild der updateCell hinzu
+                updateCell.appendChild(updateImage);
+
+                // Fügen Sie das onClick-Ereignis hinzu
+                updateImage.addEventListener('click', () => {
+                    updateDish(index);
+                }
+                );
             });
             
         }
@@ -403,6 +421,19 @@ function hideSaveButton() {
                     deleteButton.textContent = 'Löschen';
                     deleteButton.style.backgroundColor = 'red';
                     deleteButton.style.color = 'white';
+
+                    // wenn über den Button gehovered wird, wird die Farbe des Buttons geändert
+                    deleteButton.addEventListener('mouseover', () => {
+                        deleteButton.style.backgroundColor = 'darkred';
+                        deleteButton.style.color = 'white';
+                    });
+
+                    // wenn der Mauszeiger den Button verlässt, wird die Farbe des Buttons wieder geändert
+                    deleteButton.addEventListener('mouseout', () => {
+                        deleteButton.style.backgroundColor = 'red';
+                        deleteButton.style.color = 'white';
+                    });
+
                     deleteButton.addEventListener('click', () => {
                         const confirmDelete = confirm('Sind Sie sicher, dass Sie dieses Gericht löschen möchten?');
                         if (confirmDelete) {

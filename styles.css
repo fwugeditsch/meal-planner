@@ -89,6 +89,8 @@ button:hover {
     border-collapse: collapse;
     margin-top: 20px;
     text-align: center;
+    /* wenn die Tabelle zu breit wird, kann ich nach links und rechts scrollen */
+    overflow-x: auto;
 }
 
 .outer-table th, .outer-table td {
@@ -106,6 +108,10 @@ button:hover {
     background-color: #f2f2f2;
 }
 
+.outer-table tbody tr:nth-child(even) {
+    background-color: #e9e9e9;
+}
+
 /* Body der Tabelle bezüglich Breite maximieren */
 .outer-table tbody td {
     width: 300px;
@@ -115,6 +121,14 @@ button:hover {
 .outer-table thead th {
     width: 1%;
     white-space: nowrap;
+}
+
+/* erste Zeile der Tabelle drunkelgrau hinterlegen */
+.outer-table tbody tr:first-child {
+    background-color: #3c3c3c;
+    color: white;
+    height: 60px;
+    font: bold;
 }
 
 /* Stil für Aktualisieren-Buttons */
@@ -139,4 +153,11 @@ button:hover {
     justify-content: flex-end;
     /* den Container in der Mitte ausrichten */
 ;
+}
+
+.img-in-cell {
+    max-height: 20px; /* Um die Größe des Bildes zu begrenzen */
+    max-width: 20px; /* Um die Größe des Bildes zu begrenzen */
+    display: block; /* Um mögliche Abstände zu entfernen */
+    margin: auto; /* Um das Bild in der Mitte der Zelle zu zentrieren */
 }
