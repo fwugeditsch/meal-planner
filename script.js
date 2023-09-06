@@ -181,10 +181,6 @@ function hideSaveButton() {
         }
         
         
-
-
-
-
         function updateDish(index) {
             const mealPlan = getMealPlan(); // Hole den aktuellen Essensplan
 
@@ -284,6 +280,167 @@ function hideSaveButton() {
             // Hier haben Sie die ausgewählten Zutaten im Array selectedIngredients
             console.log('Ausgewählte Zutaten:', selectedIngredients);
             // Fügen Sie den Code hinzu, um die ausgewählten Zutaten weiter zu verwenden
+        }
+
+        // wenn in ein einzelnes Zutatenfeld Text geschrieben wird und kein freies Zutatenfeld mehr vorhanden ist, wird ein neues Zutatenfeld hinzugefügt
+        document.addEventListener('input', event => {
+            if (event.target.className === 'ingredient') {
+                const ingredientInputs = document.querySelectorAll('.ingredient');
+                const lastIngredientInput = ingredientInputs[ingredientInputs.length - 1];
+                if (lastIngredientInput.value.trim() !== '') {
+                    addIngredientField();
+                }
+            }
+        });
+
+        // Funktion zum Hinzufügen eines neuen Zutaten-Textfelds
+        function addIngredientField() {
+            const ingredientInputs = document.getElementById('ingredientInputs');
+            const newIngredientInput = document.createElement('input');
+            newIngredientInput.type = 'text';
+            newIngredientInput.className = 'ingredient';
+            newIngredientInput.placeholder = 'Zutat ' + (ingredientInputs.childElementCount + 1);
+            ingredientInputs.appendChild(newIngredientInput);
+        }
+
+        // Funktion zum Hinzufügen eines neuen Gerichts über eine POST-Anfrage
+        function addDish() {
+            // Lese die Eingaben aus den Eingabefeldern aus
+            const dishNameInput = document.getElementById('dishName');
+            const dishName = dishNameInput.value.trim(); // Name des Gerichts
+            const ingredientInputs = document.querySelectorAll('.ingredient');
+            const ingredients = [];
+
+            // Filtere leere Zutatenfelder heraus und trime Whitespaces
+            ingredientInputs.forEach(input => {
+                const ingredientValue = input.value.trim();
+                if (ingredientValue !== '') {
+                    ingredients.push(ingredientValue);
+                }
+            });
+
+            if (dishName === '' || ingredients.length === 0) {
+                alert('Bitte fülle alle Felder aus.');
+                return;
+            }
+
+            // wenn es bereits ein Gericht mit dem gleichen Namen gibt, wird eine Fehlermeldung ausgegeben
+            const dishesList = document.getElementById('dishesList');
+            const dishes = dishesList.querySelectorAll('.dish');
+            dishes.forEach(dish => {
+                const dishNameElement = dish.querySelector('h3');
+                if (dishNameElement.textContent === dishName) {
+                    alert('Es gibt bereits ein Gericht mit diesem Namen.');
+                    continueQuery = false;
+                    // FUnktion beenedet, wenn es bereits ein Gericht mit dem gleichen Namen gibt
+
+                }
+            });
+
+            if (continueQuery === false) {
+                return;
+            }
+
+            fetch('/api/dishes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: dishName,
+                    ingredients: ingredients,
+                }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Gericht wurde erfolgreich hinzugefügt.');
+                    // Lade die gespeicherten Gerichte neu
+                    getAndDisplayDishes();
+                    // Leere die Eingabefelder
+                    dishNameInput.value = '';
+                    ingredientInputs.forEach(input => {
+                        input.value = '';
+                    });
+                    // alle Zutatenfelder außer dem ersten werden entfernt
+                } else {
+                    throw new Error('Fehler beim Hinzufügen des Gerichts.');
+                }
+                // alle Zutatenfelder außer dem ersten werden entfernt
+                
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Fehler beim Hinzufügen des Gerichts.');
+            });
+        }
+
+
+
+        // Funktion zum Zurückkehren zur "index.html"-Seite
+        function redirectToIndexPage() {
+            window.location.href = "index.html";
+        }
+
+        // Funktion zum Abrufen und Anzeigen der gespeicherten Gerichte
+        function getAndDisplayDishes() {
+            fetch('/api/dishes')
+            .then(response => response.json())
+            .then(data => {
+                const dishesList = document.getElementById('dishesList');
+                dishesList.innerHTML = ''; // Leere die bestehende Liste
+
+                data.forEach(dish => {
+                    const dishDiv = document.createElement('div');
+                    dishDiv.className = 'dish';
+                    const dishName = document.createElement('h3');
+                    dishName.textContent = dish.name;
+                    const dishIngredients = document.createElement('p');
+                    dishIngredients.className = 'ingredients';
+                    dishIngredients.textContent = 'Zutaten: ' + dish.ingredients;
+
+                    // Hinzufügen des "Löschen"-Buttons mit Bestätigung
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Löschen';
+                    deleteButton.style.backgroundColor = 'red';
+                    deleteButton.style.color = 'white';
+                    deleteButton.addEventListener('click', () => {
+                        const confirmDelete = confirm('Sind Sie sicher, dass Sie dieses Gericht löschen möchten?');
+                        if (confirmDelete) {
+                            deleteDish(dish.id);
+                        }
+                    });
+
+                    dishDiv.appendChild(dishName);
+                    dishDiv.appendChild(dishIngredients);
+                    dishDiv.appendChild(deleteButton);
+
+                    dishesList.appendChild(dishDiv);
+                });
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Fehler beim Abrufen der Gerichte.');
+            });
+        }
+
+        // Funktion zum Löschen eines Gerichts über eine DELETE-Anfrage
+        function deleteDish(dishId) {
+            fetch(`/api/dishes/${dishId}`, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Gericht wurde erfolgreich gelöscht.');
+                    // Lade die gespeicherten Gerichte neu
+                    getAndDisplayDishes();
+                } else {
+                    throw new Error('Fehler beim Löschen des Gerichts.');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Fehler beim Löschen des Gerichts.');
+            });
         }
 
 
