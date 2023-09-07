@@ -4,6 +4,7 @@ body {
     text-align: center;
     margin: 0;
     padding: 0;
+    background-color: #080F25;
 }
 
 h1 {
@@ -12,7 +13,7 @@ h1 {
 
 /* Header-Stil */
 header {
-    background-color: #007bff;
+    background-color: #101935;
     color: white;
     padding: 20px;
 }
@@ -22,6 +23,64 @@ main {
     padding: 20px;
     max-width: 800px;
     margin: 0 auto;
+    background-color: #101935;
+    color: white;
+    border-radius: 15px;
+    /* very thin white border */
+    border: 1px rgb(56, 56, 56) solid;
+}
+
+#days {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    background-color: #212C4D;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
+}
+
+#seasonal {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    background-color: #212C4D;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
+}
+
+#generatePlan {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    background-color: #212C4D;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
+}
+
+/* hover effekt für generatePlan */
+#generatePlan:hover {
+    background-color: #6C72FF;
+}
+
+/* effekte für mealPlanTable */
+#mealPlanTable {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    background-color: #212C4D;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
+    /* ecken abrunden */
+    border-radius: 15px;
+}
+
+#seasonalIngredients {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    background-color: #212C4D;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
 }
 
 /* Einstellungen */
@@ -76,11 +135,30 @@ button:hover {
 
 /* Stil für den grünen Button */
 #savePlan {
-    background-color: green;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    background-color: #6C72FF;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
 }
 
 #savePlan:hover {
-    background-color: darkgreen;
+    background-color: #212C4D;
+}
+
+#viewDishes {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    background-color: #212C4D;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
+}
+
+/* hover effekt für generatePlan */
+#viewDishes:hover {
+    background-color: #6C72FF;
 }
 
 /* Tabellenstil */
@@ -89,27 +167,24 @@ button:hover {
     border-collapse: collapse;
     margin-top: 20px;
     text-align: center;
-    /* wenn die Tabelle zu breit wird, kann ich nach links und rechts scrollen */
-    overflow-x: auto;
+    border-spacing: 0;
+    border-collapse: separate;
+    border-radius: 10px;
 }
 
 .outer-table th, .outer-table td {
-    border: 1px solid #ccc;
+    border: 1px solid rgb(97, 97, 97);
     padding: 10px;
 }
 
-.outer-table th {
-    background-color: #007bff;
-    color: white;
-    font-weight: bold;
-}
-
 .outer-table tbody tr:nth-child(odd) {
-    background-color: #f2f2f2;
+    background-color: #101935;
+    color: white;
 }
 
 .outer-table tbody tr:nth-child(even) {
-    background-color: #e9e9e9;
+    background-color: #222D4D;
+    color: white;
 }
 
 /* Body der Tabelle bezüglich Breite maximieren */
@@ -125,10 +200,38 @@ button:hover {
 
 /* erste Zeile der Tabelle drunkelgrau hinterlegen */
 .outer-table tbody tr:first-child {
-    background-color: #3c3c3c;
+    background-color: #101935;
     color: white;
     height: 60px;
     font: bold;
+    /* Kante links oben und rechts oben abrunden */
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.outer-table body th:first-of-type {
+    border-top-left-radius: 10px;
+}
+th:last-of-type {
+    border-top-right-radius: 10px;
+}
+tr:first-of-type td:first-of-type {
+    border-top-left-radius: 10px;
+}
+tr:first-of-type td:last-of-type {
+    border-top-right-radius: 10px;
+}
+tr:last-of-type td:first-of-type {
+    border-bottom-left-radius: 10px;
+}
+tr:last-of-type td:last-of-type {
+    border-bottom-right-radius: 10px;
+}
+
+/* Stil für die zweite und dritte Spalte der Tabelle, aber nicht die erste Zeile */
+.outer-table tbody tr:not(:first-child) td:nth-child(2),
+.outer-table tbody tr:not(:first-child) td:nth-child(3) {
+    text-align: left;
 }
 
 /* Stil für Aktualisieren-Buttons */
