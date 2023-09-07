@@ -408,6 +408,9 @@ function hideSaveButton() {
                 dishesList.innerHTML = ''; // Leere die bestehende Liste
 
                 data.forEach(dish => {
+                    // alle Gerichte werden alphabetisch sortiert
+                    data = data.sort((a, b) => a.name.localeCompare(b.name));
+
                     const dishDiv = document.createElement('div');
                     dishDiv.className = 'dish';
                     const dishName = document.createElement('h3');
@@ -474,8 +477,32 @@ function hideSaveButton() {
             });
         }
 
+        function searchDishes() {
+            const searchText = document.getElementById('dishSearch').value.toLowerCase();
+            const dishesList = document.getElementById('dishesList');
+            const dishes = dishesList.querySelectorAll('.dish');
+        
+            dishes.forEach(dish => {
+                const dishNameElement = dish.querySelector('h3');
+                const dishName = dishNameElement.textContent.toLowerCase();
+        
+                // Überprüfe, ob das Gericht den Suchbegriff enthält
+                if (dishName.includes(searchText)) {
+                    dish.style.display = 'block'; // Zeige das Gericht an
+                } else {
+                    dish.style.display = 'none'; // Verberge das Gericht
+                }
+            });
+        }
+        
 
-        // Rufen Sie die Funktion zum Befüllen des Dropdown-Menüs auf
-        fillSeasonalIngredientsDropdown();
-        // Rufe die Funktion fetchAvailableDishes auf, um die verfügbaren Gerichte aus der Datenbank abzurufen
-        fetchAvailableDishes();
+        // wenn die aktuelle Seite die "index.html"-Seite ist, soll die Funktion fillSeasonalIngredientsDropdown aufgerufen werden
+        if (window.location.pathname === '/index.html') {
+            fillSeasonalIngredientsDropdown();
+            fetchAvailableDishes();
+        } else if (window.location.pathname === '/dishes.html') {
+            // wenn die aktuelle Seite die "dishes.html"-Seite ist, soll die Funktion getAndDisplayDishes aufgerufen werden
+            getAndDisplayDishes();
+            const searchInput = document.getElementById('dishSearch');
+            searchInput.addEventListener('input', searchDishes);
+        }
