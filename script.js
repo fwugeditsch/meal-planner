@@ -345,6 +345,7 @@ function hideSaveButton() {
             // wenn es bereits ein Gericht mit dem gleichen Namen gibt, wird eine Fehlermeldung ausgegeben
             const dishesList = document.getElementById('dishesList');
             const dishes = dishesList.querySelectorAll('.dish');
+            let continueQuery = true;
             dishes.forEach(dish => {
                 const dishNameElement = dish.querySelector('h3');
                 if (dishNameElement.textContent === dishName) {
