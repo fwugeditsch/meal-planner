@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerichteverwaltung</title>
+    
+    <link rel="stylesheet" href="awesomplete.css">
     <link rel="stylesheet" href="dishes_styles.css">
+    <script src="awesomplete.js" async></script>
+    <script src="script.js"></script>
 </head>
 <body>
     <header>
@@ -17,10 +21,11 @@
             <input type="text" id="dishName" placeholder="Name des Gerichts">
             <div id="ingredientInputs">
                 <!-- Hier werden die Zutaten-Textfelder dynamisch hinzugefügt -->
-                <input type="text" class="ingredient" placeholder="Zutat 1">
+                <input type="text" class="awesomplete ingredient" data-list="" placeholder="Zutat 1">
             </div>
             <button class="editNewDishButtons" onclick="addDish()">Speichern</button>
-            <button class="editNewDishButtons" onclick="addIngredientField()">Weitere Zutat hinzufügen</button>
+            <!-- Button um ein neues Zutatenfeld zu erzeugen -->
+            <button class="editNewDishButtons" onclick="addIngredientField()">Zutat hinzufügen</button>
         </section>
 
         <button id="goBack" class="back-button" onclick="redirectToIndexPage()">Zurück zum Essensplaner</button>
@@ -39,11 +44,12 @@
         </div>
     </main>
 
-    <script src="script.js"></script>
+    
     <script>
         getAndDisplayDishes();
         const searchInput = document.getElementById('dishSearch');
         searchInput.addEventListener('input', searchDishes);
+        loadIngredientsIntoAutocomplete(); // Autocomplete für Zutaten aktivieren
     </script>
     
 </body>

@@ -300,25 +300,41 @@ function hideSaveButton() {
             // Fügen Sie den Code hinzu, um die ausgewählten Zutaten weiter zu verwenden
         }
 
-        // wenn in ein einzelnes Zutatenfeld Text geschrieben wird und kein freies Zutatenfeld mehr vorhanden ist, wird ein neues Zutatenfeld hinzugefügt
-        document.addEventListener('input', event => {
-            if (event.target.className === 'ingredient') {
-                const ingredientInputs = document.querySelectorAll('.ingredient');
-                const lastIngredientInput = ingredientInputs[ingredientInputs.length - 1];
-                if (lastIngredientInput.value.trim() !== '') {
-                    addIngredientField();
-                }
-            }
-        });
+        // Zähler für Zutatenfelder
+        let ingredientCounter = 1;
+
 
         // Funktion zum Hinzufügen eines neuen Zutaten-Textfelds
         function addIngredientField() {
+
+            // Wenn es bereits ein leerer Eingabefeld gibt, passiert nichts
+            const ingredientInputs1 = document.querySelectorAll('.ingredient');
+            let emptyInputFound = false;
+            ingredientInputs1.forEach(input => {
+                if (input.value === '') {
+                    emptyInputFound = true;
+                }
+            }
+            );
+            if (emptyInputFound) {
+                return;
+            }
+
             const ingredientInputs = document.getElementById('ingredientInputs');
             const newIngredientInput = document.createElement('input');
             newIngredientInput.type = 'text';
-            newIngredientInput.className = 'ingredient';
+            newIngredientInput.className = 'ingredient awesomplete'; // Stellen Sie sicher, dass die Klasse 'awesomplete' hinzugefügt wird
+            newIngredientInput.dataset.list = ''; // Setzen Sie das data-list-Attribut auf einen leeren Wert
             newIngredientInput.placeholder = 'Zutat ' + (ingredientInputs.childElementCount + 1);
             ingredientInputs.appendChild(newIngredientInput);
+
+            // Fügen Sie das neue Zutatenfeld dem Awesomplete-Plugin hinzu
+            const awesomplete = new Awesomplete(newIngredientInput, {
+                list: [],
+                minChars: 2,
+            });
+            loadIngredientsIntoAutocomplete();
+
         }
 
         // Funktion zum Hinzufügen eines neuen Gerichts über eine POST-Anfrage
@@ -493,5 +509,30 @@ function hideSaveButton() {
                 } else {
                     dish.style.display = 'none'; // Verberge das Gericht
                 }
+            });
+        }
+        
+        // Funktion zum Abrufen der verfügbaren Zutaten aus der Datenbank
+        async function fetchAvailableIngredients() {
+            try {
+                const response = await fetch('/api/ingredients'); // Stelle sicher, dass dies dem tatsächlichen Pfad zu deinem API-Endpunkt entspricht
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Fehler beim Abrufen der Zutaten aus der Datenbank:', error);
+                return [];
+            }
+        }
+
+        // Laden Sie die Zutaten aus der Datenbank und fügen Sie sie in das Autocomplete-Feld ein
+        async function loadIngredientsIntoAutocomplete() {
+            const ingredientInputs = document.querySelectorAll('.ingredient.awesomplete');
+            const availableIngredients = await fetchAvailableIngredients();
+
+            ingredientInputs.forEach((input) => {
+                const awesomplete = new Awesomplete(input, {
+                    list: availableIngredients,
+                    minChars: 2,
+                });
             });
         }

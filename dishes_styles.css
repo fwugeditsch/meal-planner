@@ -110,9 +110,8 @@ main {
     box-sizing: border-box;
 }
 
-#ingredient {
-    /* maximale Breite von ingredientInputs */
-    /* Breite von ingredientInputs */
+/* Style für die Klasse "awesomplete ingredient" */
+.awesomplete.ingredient {
     width: 100%;
 }
 
