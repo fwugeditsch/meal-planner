@@ -494,15 +494,3 @@ function hideSaveButton() {
                 }
             });
         }
-        
-
-        // wenn die aktuelle Seite die "index.html"-Seite ist, soll die Funktion fillSeasonalIngredientsDropdown aufgerufen werden
-        if (window.location.pathname === '/index.html') {
-            fillSeasonalIngredientsDropdown();
-            fetchAvailableDishes();
-        } else if (window.location.pathname === '/dishes.html') {
-            // wenn die aktuelle Seite die "dishes.html"-Seite ist, soll die Funktion getAndDisplayDishes aufgerufen werden
-            getAndDisplayDishes();
-            const searchInput = document.getElementById('dishSearch');
-            searchInput.addEventListener('input', searchDishes);
-        }
