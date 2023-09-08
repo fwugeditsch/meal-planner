@@ -17,11 +17,14 @@
 
     <main>
         <section id="addDishForm" class="form">
-            <h2>Neues Gericht hinzufügen</h2>
+            <!-- neues Gericht hinzufügen weiße Schrift -->
+            <h2 class="addNewDishText">
+                Neues Gericht hinzufügen
+            </h2>
             <input type="text" id="dishName" placeholder="Name des Gerichts">
             <div id="ingredientInputs">
                 <!-- Hier werden die Zutaten-Textfelder dynamisch hinzugefügt -->
-                <input type="text" class="awesomplete ingredient" data-list="" placeholder="Zutat 1">
+                <input id="ingredientName" type="text" class="awesomplete ingredient" data-list="" placeholder="Zutat 1">
             </div>
             <button class="editNewDishButtons" onclick="addDish()">Speichern</button>
             <!-- Button um ein neues Zutatenfeld zu erzeugen -->

@@ -435,6 +435,8 @@ function hideSaveButton() {
                     const dishIngredients = document.createElement('p');
                     dishIngredients.className = 'ingredients';
                     dishIngredients.textContent = 'Zutaten: ' + dish.ingredients;
+                    // den Zutatentext hellgrau
+                    dishIngredients.style.color = 'grey';
 
                     // Hinzufügen des "Löschen"-Buttons mit Bestätigung
                     const deleteButton = document.createElement('button');
@@ -460,6 +462,15 @@ function hideSaveButton() {
                             deleteDish(dish.id);
                         }
                     });
+
+                    // Hintergrundfarbe von jedem zweiten Gericht wird dunkelblau
+                    if (dishesList.childElementCount % 2 === 0) {
+                        // Farbe als rgb angeben
+                        dishDiv.style.backgroundColor = 'rgb(16, 25, 53)';
+                    }
+                    else {
+                        dishDiv.style.backgroundColor = 'rgb(34, 45, 77)';
+                    }
 
                     dishDiv.appendChild(dishName);
                     dishDiv.appendChild(dishIngredients);
