@@ -327,6 +327,11 @@ function hideSaveButton() {
             newIngredientInput.dataset.list = ''; // Setzen Sie das data-list-Attribut auf einen leeren Wert
             newIngredientInput.placeholder = 'Zutat ' + (ingredientInputs.childElementCount + 1);
             ingredientInputs.appendChild(newIngredientInput);
+            // Hintergrundfarbe des neuen Zutatenfelds wird #212C4D
+            newIngredientInput.style.backgroundColor = '#212C4D';
+            // der Rand des neuen Zutatenfeld soll 1px rgb(56, 56, 56) solid sein
+            newIngredientInput.style.border = '1px rgb(56, 56, 56) solid';
+            newIngredientInput.style.color = 'lightgrey';
 
             // Fügen Sie das neue Zutatenfeld dem Awesomplete-Plugin hinzu
             const awesomplete = new Awesomplete(newIngredientInput, {
