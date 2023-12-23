@@ -29,6 +29,90 @@ const Dish = sequelize.define('Dish', {
   autoIncrement: true // Lasse das id-Feld automatisch inkrementieren
 });
 
+// Sequelize-Modell für Essenspläne (falls du Sequelize verwendest)
+const Mealplan = sequelize.define('Mealplan', {
+  year: {
+    type: Sequelize.INTEGER
+  },
+  week: {
+    type: Sequelize.INTEGER
+  },
+  dishes: {
+    type: Sequelize.STRING
+  }
+}, {
+  timestamps: false, // Deaktiviere die Verwendung von Timestamp-Spalten
+  primaryKey: true, // Setze das id-Feld als Primärschlüssel
+  autoIncrement: true // Lasse das id-Feld automatisch inkrementieren
+});
+
+
+
+// Section für das Modell des Essensplans
+
+// Abspeichern eines generierten Essensplans mit Jahr, Kalenderwoche und Gerichten
+app.post('/api/mealplan', async (req, res) => {
+  try {
+    const { year, week, dishes } = req.body;
+
+    // Code zum Speichern des Essensplans in der Datenbank
+    await Mealplan.create({
+      year: year,
+      week: week,
+      dishes: dishes.join(', '), // Falls die Gerichte als Array gespeichert werden
+    });
+
+    res.status(201).send('Essensplan wurde erfolgreich gespeichert.');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Speichern des Essensplans.');
+  }
+});
+
+// Abrufen eines gespeicherten Essensplans anhand des Jahres und der Kalenderwoche
+app.get('/api/mealplan/:year/:week', async (req, res) => {
+  try {
+    const year = req.params.year;
+    const week = req.params.week;
+
+    // Code zum Abrufen des Essensplans aus der Datenbank anhand des Jahres und der Kalenderwoche
+    const mealplan = await Mealplan.findOne({
+      where: {
+        year: year,
+        week: week
+      }
+    });
+
+    res.json(mealplan); // Senden des Essensplans als JSON-Antwort
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Abrufen des Essensplans');
+  }
+});
+
+// Löschen eines gespeicherten Essensplans anhand des Jahres und der Kalenderwoche
+app.delete('/api/mealplan/:year/:week', async (req, res) => {
+  try {
+    const year = req.params.year;
+    const week = req.params.week;
+
+    // Code zum Löschen des Essensplans aus der Datenbank anhand des Jahres und der Kalenderwoche
+    await Mealplan.destroy({
+      where: {
+        year: year,
+        week: week
+      }
+    });
+
+    res.status(200).send('Essensplan wurde erfolgreich gelöscht.');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Löschen des Essensplans.');
+  }
+});
+
+
+
 
 
 // API-Endpunkt zum Hinzufügen eines neuen Gerichts

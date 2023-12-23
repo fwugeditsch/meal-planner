@@ -7,6 +7,11 @@
         Essensplaner
     </title>
     <link rel="stylesheet" href="styles.css">
+
+    <script src="weekPicker/jquery-1.12.4.min.js"></script>
+    <script src="weekPicker/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="weekPicker/jquery-ui.css">
+    <script src="weekPicker/jquery.weekpicker.js"></script>
 </head>
 <body>
     <header>
@@ -62,9 +67,29 @@
         <!-- Die beiden Buttons savePlan und viewDishes schön nebeneinander und zentriert darstelle-->
         <br>
         <div class="button-container">
-            <button id="savePlan" style="display: none;">Essensplan speichern</button>
+            <button id="savePlan" onclick="openPopup()" style="display: none;">Essensplan speichern</button>
             <button id="viewDishes" onclick="redirectToDishesPage()">Gerichte verwalten</button>
         </div>
+
+        <!-- Erstellen eines Popups, welches angezeigt wird, wenn der Nutzer auf den Button "Essensplan speichern" klickt, in welchem er das Jahr und die Kalenderwoche eingeben kann, in welcher der Essensplan gespeichert werden soll -->
+       
+        <div id="savePopup" class="popup">
+            <div class="popup-content">
+                <span class="close" onclick="closePopup()">&times;</span>
+                <h2>Essensplan speichern</h2>
+                <!-- Eingabe für Kalenderwoche -->
+                <input type="text" id="weekPicker" class="weekPicker">
+                <script>
+                    (function ( $ ) {
+                        $( "#weekPicker" ).weekpicker();
+                    } )(jQuery)
+                </script>
+                
+
+                <button onclick="saveMealPlan()">Speichern</button>
+            </div>
+        </div>
+
     </main>
 
     <script src="script.js"></script>

@@ -500,6 +500,83 @@ function hideSaveButton() {
             });
         }
 
+
+        function saveMealPlan() {
+            // diese Funktion wird aufgerufen, wenn der "Speichern"-Button geklickt wird.
+            // Es soll der generierte Essensplan in der Datenbank mittels Jahr und Kalenderwoche gespeichert werden.
+            // Dazu müssen die Werte aus den Eingabefeldern ausgelesen werden.
+            
+            // Vor dem Speichern soll nach Anklicken des Speichern-Buttons ein Popup-Fenster erscheinen, in welchem der Nutzer das Jahr und die Kalenderwoche eingeben, für die der Essensplan vorgesehen ist.
+            // Die Eingabe soll in Variablen gespeichert werden.
+            // Die Variablen sollen dann in der fetch-Anfrage verwendet werden, um den Essensplan in der Datenbank zu speichern.
+            // Die fetch-Anfrage soll in einem try-catch-Block stehen.
+            // Bei erfolgreicher Speicherung soll eine Erfolgsmeldung ausgegeben werden.
+            // Bei einem Fehler soll eine Fehlermeldung ausgegeben werden.
+
+            // Lese Kalenderwoche und Jahr aus den Eingabefeldern aus. Die Werte stehen im Textelement "weekPicker" im Format "KW/Jahr".
+            const weekPicker = document.getElementById('weekPicker');
+            const date = weekPicker.value; // Datum im Format DD/MM/YYYY
+            const week = getCalendarWeek(date); // Kalenderwoche
+            // ausgabe zum debuggen
+            console.log('Datum: ' + date);
+            console.log('Kalenderwoche: ' + week);
+            const year = getYear(date); // Jahr
+            console.log('Jahr: ' + year);
+
+        }
+
+        function getCalendarWeek(dateString) {
+            // Zerlegen Sie das Datum in Tag, Monat und Jahr
+            const [day, month, year] = dateString.split('/').map(Number);
+        
+            // Erstellen Sie ein Date-Objekt
+            const date = new Date(year, month - 1, day);
+        
+            // Kopieren Sie das Date-Objekt, um die Originalinstanz nicht zu ändern
+            const currentDate = new Date(date);
+        
+            // Setzen Sie das Datum auf den 4. Januar des aktuellen Jahres
+            currentDate.setMonth(0, 4);
+        
+            // Berechnen Sie den Unterschied zwischen dem 4. Januar und dem angegebenen Datum in Millisekunden
+            const timeDifference = date - currentDate;
+        
+            // Berechnen Sie die Anzahl der Tage seit dem 4. Januar
+            const daysSinceJanuary4 = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        
+            // Berechnen Sie die Kalenderwoche
+            const calendarWeek = Math.ceil((daysSinceJanuary4 + currentDate.getDay() + 1) / 7);
+        
+            return calendarWeek;
+        }
+
+        function getYear(dateString) {
+            // Zerlegen Sie das Datum in Tag, Monat und Jahr
+            const [day, month, year] = dateString.split('/').map(Number);
+        
+            return year;
+        }
+        
+        // Beispielaufruf
+        const date = '23/12/2023';
+        const calendarWeek = getCalendarWeek(date);
+        console.log(`Die Kalenderwoche für ${date} ist: ${calendarWeek}`);
+        
+
+        // Funktion zum Anzeigen des Popups
+        function openPopup() {
+            const popup = document.getElementById('savePopup');
+            popup.style.display = 'block';
+        }
+
+        // Funktion zum Verbergen des Popups
+        function closePopup() {
+            const popup = document.getElementById('savePopup');
+            popup.style.display = 'none';
+        }
+    
+
+
         // Funktion zum Löschen eines Gerichts über eine DELETE-Anfrage
         function deleteDish(dishId) {
             fetch(`/api/dishes/${dishId}`, {
