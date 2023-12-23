@@ -119,11 +119,6 @@ function hideSaveButton() {
         displayMealPlan(mealPlan);
     }
 
-
-
-
-
-
         function selectDishesWithSeasonalIngredients(availableDishes, selectedSeasonalIngredients, numberOfDays) {
             // Sammle alle Gerichte, die mindestens eine saisonale Zutat enthalten
             const dishesWithSeasonalIngredients = availableDishes.filter((dish) => {
@@ -342,6 +337,19 @@ function hideSaveButton() {
 
         }
 
+        function resetIngredientFields() {
+            // alle Zutatenfelder außer dem ersten werden entfernt
+            const ingredientInputs = document.querySelectorAll('.ingredient');
+            ingredientInputs.forEach((input, index) => {
+                if (index !== 0)
+                    input.remove();
+            }
+            );
+
+            // der Inhalt des ersten Zutatenfelds wird geleert
+            ingredientInputs[0].value = '';
+        }
+
         // Funktion zum Hinzufügen eines neuen Gerichts über eine POST-Anfrage
         function addDish() {
             // Lese die Eingaben aus den Eingabefeldern aus
@@ -405,7 +413,9 @@ function hideSaveButton() {
                 } else {
                     throw new Error('Fehler beim Hinzufügen des Gerichts.');
                 }
-                // alle Zutatenfelder außer dem ersten werden entfernt
+
+                resetIngredientFields(); // Setze die Zutatenfelder zurück
+
                 
             })
             .catch(error => {

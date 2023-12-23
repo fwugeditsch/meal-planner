@@ -113,6 +113,8 @@ app.get('/api/ingredients', async (req, res) => {
 sequelize.sync().then(() => {
   app.listen(port, () => {
     console.log(`Der Server läuft auf Port ${port}`);
+    // klickbare Ausgabe des Links zum Öffnen der Anwendung im Browser
+    console.log(`http://localhost:${port}`);
   });
 });
 
