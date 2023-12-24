@@ -74,7 +74,7 @@ app.get('/api/MealPlans/:calendar_week_year', async (req, res) => {
   try {
     const calendar_week_year = req.params.calendar_week_year;
 
-    // Code zum Abrufen des Essensplans aus der Datenbank anhand der calendar_week_year
+    // Code zum Abrufen des Essensplans aus der Datenbank anhand des Werts von calendar_week_year
     const mealplan = await Mealplan.findOne({
       where: {
         calendar_week_year: calendar_week_year
@@ -83,17 +83,19 @@ app.get('/api/MealPlans/:calendar_week_year', async (req, res) => {
 
     // Falls kein Essensplan gefunden wurde, wird 404 zurückgegeben
     // Falls ein Essensplan gefunden wurde, wird dieser als JSON-Antwort zurückgegeben und der Statuscode 200 gesetzt
-    if (!mealplan) {
-      res.status(201).send('Es wurde kein Essensplan gefunden.');
+    if (mealplan === null) {
+      res.status(404).json({ message: 'Es wurde kein Essensplan gefunden.' });
+      console.log('Es wurde kein Essensplan gefunden.');
       return;
     }
 
-    res.json(mealplan);
+    res.status(200).json(mealplan);
   } catch (error) {
     console.error(error);
     res.status(500).send('Fehler beim Abrufen des Essensplans');
   }
 });
+
 
 // Löschen eines gespeicherten Essensplans anhand des Jahres und der Kalenderwoche
 app.delete('/api/MealPlans/:year/:week', async (req, res) => {
@@ -191,6 +193,33 @@ app.get('/api/ingredients', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Fehler beim Abrufen der Zutaten');
+  }
+});
+
+// API-Endpunkt zum Abrufen eines Gerichts anhand seines Namens
+app.get('/api/dishes/:name', async (req, res) => {
+  try {
+    const dishName = req.params.name;
+
+    // Code zum Abrufen des Gerichts aus der Datenbank anhand seines Namens
+    const dish = await Dish.findOne({
+      where: {
+        name: dishName
+      }
+    });
+
+    // Falls kein Gericht gefunden wurde, wird 404 zurückgegeben
+    // Falls ein Gericht gefunden wurde, wird dieses als JSON-Antwort zurückgegeben und der Statuscode 200 gesetzt
+    if (dish === null) {
+      res.status(404).json({ message: 'Es wurde kein Gericht gefunden.' });
+      console.log('Es wurde kein Gericht gefunden.');
+      return;
+    }
+
+    res.status(200).json(dish);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Abrufen des Gerichts');
   }
 });
 

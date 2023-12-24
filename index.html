@@ -96,6 +96,34 @@
     <script>
         fillSeasonalIngredientsDropdown();
         fetchAvailableDishes();
+    
+        // Es soll automatisch beim Laden der Seite der Mealplan für die aktuelle Woche angezeigt werden, sofern es einen gibt
+        // Datum im Format DD/MM/YYYY
+        const currentDate = getCurrentDate(); // eigene function
+        console.log("Das aktuelle Datum ist: " + currentDate);
+    
+        const currentWeek = getCalendarWeek(currentDate); // eigene function
+        // Nutzen der Funktion getMealplanForWeek aus script.js
+        console.log("Die aktuelle Kalenderwoche ist: " + currentWeek);
+    
+        const calendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate)); // eigene function
+        console.log("Das aktuelle Jahr und die aktuelle Kalenderwoche sind: " + calendarWeekYear);
+    
+        // Nutzen der Funktion getMealplanForWeek aus script.js
+        getMealPlanForWeek(calendarWeekYear)
+            .then((currentMealPlan) => {
+                if (currentMealPlan.length > 0) {
+                    // Ausgabe des aktuellen Mealplans
+                    // Der Mealplan wird nur angezeigt, wenn er vorhanden ist
+                    displayMealPlan(currentMealPlan);
+                    console.log("Der aktuelle Mealplan wird angezeigt");
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                // Handle Fehler, z.B. durch eine Benachrichtigung an den Benutzer
+            });
     </script>
+    
 </body>
 </html>
