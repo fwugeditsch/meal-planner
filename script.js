@@ -501,7 +501,7 @@ function hideSaveButton() {
         }
 
 
-        function saveMealPlan() {
+        async function saveMealPlan() {
             // diese Funktion wird aufgerufen, wenn der "Speichern"-Button geklickt wird.
             // Es soll der generierte Essensplan in der Datenbank mittels Jahr und Kalenderwoche gespeichert werden.
             // Dazu müssen die Werte aus den Eingabefeldern ausgelesen werden.
@@ -514,6 +514,11 @@ function hideSaveButton() {
             // Bei einem Fehler soll eine Fehlermeldung ausgegeben werden.
 
             // Lese Kalenderwoche und Jahr aus den Eingabefeldern aus. Die Werte stehen im Textelement "weekPicker" im Format "KW/Jahr".
+            if (document.getElementById('weekPicker').value === '') {
+                alert('Bitte wähle ein Datum aus.');
+                return;
+            }
+
             const weekPicker = document.getElementById('weekPicker');
             const date = weekPicker.value; // Datum im Format DD/MM/YYYY
             const week = getCalendarWeek(date); // Kalenderwoche
@@ -522,7 +527,72 @@ function hideSaveButton() {
             console.log('Kalenderwoche: ' + week);
             const year = getYear(date); // Jahr
             console.log('Jahr: ' + year);
+            // calendar_week_year: beide Integer-Werte werden kombiniert und als Integer gespeichert. Es sollen jedoch nicht die beiden Wert addiert werden, sondern die Kalenderwoche soll an das Jahr angehängt werden.
+            const calendar_week_year = parseInt('' + year + week);
+            // jetzt in Integer umwandeln
+            
+            console.log('calendar_week_year: ' + calendar_week_year);
 
+            // wenn die Kalenderwoche bereits in der Datenbank vorhanden ist, soll eine Fehlermeldung ausgegeben werden und der Essensplan nicht gespeichert werden.
+            // Deklaration und Initialisierung von mealplan zu Beginn der Funktion
+    let mealplan;
+
+    try {
+        // Überprüfe, ob der Essensplan bereits in der Datenbank vorhanden ist
+        const response = await fetch(`/api/MealPlans/${calendar_week_year}`);
+        // Statuscode der Antwort auswerten
+        if (response.status === 200) {
+            // wenn die Antwort den Statuscode 200 hat, ist der Essensplan bereits vorhanden
+            alert('Fehler beim Speichern des Essensplans. Der Essensplan ist bereits vorhanden.');
+            return;
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Fehler beim Speichern des Essensplans oder beim Abfragen der Datenbank. Fehlercode: ' + error.status);
+    }
+
+    try {
+        // Lese den Essensplan aus der Tabelle aus
+        const mealPlan = getMealPlan();
+        console.log('Essensplan: ' + mealPlan);
+
+        // Der Essensplan soll als ID die Kalenderwoche und das Jahr haben und als Inhalt die Namen der Gerichte mit Komma getrennt.
+        // Erstelle ein Array mit den Namen der Gerichte
+        const dishes = [];
+        mealPlan.forEach(dish => {
+            dishes.push(dish.name);
+        });
+        // Erstelle einen String mit den Namen der Gerichte mit Komma getrennt
+        const dishesString = dishes.join(', ');
+        console.log('Gerichte: ' + dishesString);
+
+        // Erstelle eine neue Instanz von Mealplan
+        mealplan = {
+            // Die DB erwartet die Attribute year (JahrKalenderwoche) und IDs der dishes (Gerichte) als String mit Komma getrennt
+            calendar_week_year: calendar_week_year,
+            dishes: dishesString // IDs der Gerichte als String mit Komma getrennt
+        };
+
+        // Der Essensplan ist noch nicht in der Datenbank, also speichere ihn
+        const mealplanResponse = await fetch('/api/MealPlans', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(mealplan),
+        });
+
+        if (mealplanResponse.ok) {
+            alert('Essensplan wurde erfolgreich gespeichert.');
+            // Leere die Eingabefelder
+            weekPicker.value = '';
+        } else {
+            throw new Error('Fehler beim Speichern des Essensplans.');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Fehler beim Speichern des Essensplans oder beim Abfragen der Datenbank. Code: ' + error.status);
+    }
         }
 
         function getCalendarWeek(dateString) {
