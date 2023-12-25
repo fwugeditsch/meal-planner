@@ -312,3 +312,72 @@ tr:last-of-type td:last-of-type {
     border: 1px solid #ccc;
     border-radius: 5px;
 }
+
+/* Stil für die class mealplan-header */
+/* Hier soll ganz links und rechts ein quadratischer Button zum Wechseln des Essensplans sein und genau in der Mitte zentriert der Text*/
+.mealplan-header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #212C4D;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
+    /* ecken abrunden */
+    border-radius: 15px;
+}
+
+/* Regeln den Button previousMealPlan */
+/* Dieser soll sich innerhalb der class mealplan-header ganz links befinden und die selbe Höhe wie die class mealplan-header haben */
+#previousMealPlan {
+    display: flex;
+    background-color: #6C72FF;
+    color: lightgray;
+    /* nur Ecken links abrunden */
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px rgb(56, 56, 56) solid;
+    /* Content horizontal und vertikal zentrieren */
+    align-items: center;
+    justify-content: center;
+    /* maximale Breite prozentual zur Breite der class mealplan-header */
+    width: 8%;
+    /* Button soll ganz links sein */
+    margin-left: 0;
+}
+
+#nextMealPlan {
+    display: flex;
+    background-color: #6C72FF;
+    color: lightgray;
+    /* nur Ecken links abrunden */
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+    border: 1px rgb(56, 56, 56) solid;
+    /* Content horizontal und vertikal zentrieren */
+    align-items: center;
+    justify-content: center;
+    /* maximale Breite prozentual zur Breite der class mealplan-header */
+    width: 8%;
+    /* Button soll ganz rechts sein */
+    margin-right: 0;
+}
+
+/* hover effekt für previousMealPlan */
+#previousMealPlan:hover {
+    background-color: #212C4D;
+}
+
+/* hover effekt für nextMealPlan */
+#nextMealPlan:hover {
+    background-color: #212C4D;
+}
+
+/* Regeln für den Text in der Mitte der class mealplan-header */
+.mealplan-header h2 {
+    font-size: 1.1rem;
+    /* Content horizontal und vertikal zentrieren */
+    align-items: center;
+    justify-content: center;
+    /* links und rechts Abstand zum Button */
+    margin-left:7px;
+    margin-right:7px;
+}

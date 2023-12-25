@@ -1,6 +1,10 @@
 // Vor dem Aufrufen der generateMealPlan-Funktion die Gerichte aus der Datenbank abrufen und in availableDishes speichern
 let availableDishes = [];
 
+const currentDate = getCurrentDate();
+var displayedCalendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate));
+// var latestMealPlanWeekYear = getLatestMealPlanWeek();
+
 // Hier eine Funktion zum Abrufen aller Gerichte aus der Datenbank
 async function fetchAvailableDishes() {
     try {
@@ -133,6 +137,8 @@ function hideSaveButton() {
 
         // Anzeigen des Essensplans in der Tabelle
         displayMealPlan(mealPlan);
+        displayedCalendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate));
+
     }
 
         function selectDishesWithSeasonalIngredients(availableDishes, selectedSeasonalIngredients, numberOfDays) {
@@ -163,6 +169,9 @@ function hideSaveButton() {
             // der Parameter mealPlan ist ein Array mit den Gerichten
             const mealPlanTable = document.getElementById('mealPlanTable');
             mealPlanTable.innerHTML = ''; // Lösche alle Zeilen aus der Tabelle
+
+            console.log("Datentyp von mealPlan:", typeof mealPlan);
+            console.log("Inhalt von mealPlan:", mealPlan);
 
             // Datentyp von mealPlan zum debuggen
             console.log('Datentyp von mealPlan: ' + typeof mealPlan);
@@ -261,54 +270,6 @@ function hideSaveButton() {
 
             return mealPlan;
         }
-
-        // Funktion zum Holen des Essensplans für ein bestimmtes Jahr und eine bestimmte Kalenderwoche, welche als Parameter übergeben werden
-        // der Essensplan soll als Array zurückgegeben werden, sodass displayMealPlan() aufgerufen werden kann
-        async function getMealPlanForWeek(calendar_week_year) {
-            let mealplan;
-            var dish_names_array = [];
-            var dishes = [];
-
-            try {
-                // Überprüfe, ob der Essensplan bereits in der Datenbank vorhanden ist
-                const response = await fetch(`/api/MealPlans/${calendar_week_year}`);
-                // Statuscode der Antwort auswerten
-                if (response.status === 200) {
-                    // wenn die Antwort den Statuscode 200 hat, ist der Essensplan bereits vorhanden
-                    mealplan = await response.json();
-                    const dish_names = mealplan.dish_names;
-                    dish_names_array = dish_names.split(', ');
-                    // dish_names_array ausgeben zum debuggen
-                    console.log('dish_names_array: ' + dish_names_array);
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Fehler beim Abrufen des Essensplans oder beim Abfragen der Datenbank. Fehlercode: ' + error.status);
-            }
-
-            // Es soll nun ein Array aus den einzelnen Dishes erstellt werden, sodass displayMealPlan() aufgerufen werden kann
-            // Dazu müssen die Gerichte aus der Datenbank abgerufen werden
-            // Die Gerichte sollen in einem Array gespeichert werden
-
-            // alle Gerichte anhand des Namens aus der Datenbank abrufen und in dishes speichern
-            try {
-                for (let i = 0; i < dish_names_array.length; i++) {
-                    const response = await fetch(`/api/dishes/${dish_names_array[i]}`);
-                    const dish = await response.json();
-                    console.log('Datentyp von dish: ' + typeof dish);
-                    console.log('Name von Dish: ' + dish.name);
-                    console.log('Zutaten von Dish: ' + dish.ingredients);
-                    dishes.push(dish);
-                }
-            }
-            catch (error) {
-                console.error(error);
-                alert('Fehler beim Abrufen der Gerichte oder beim Abfragen der Datenbank. Fehlercode: ' + error.status);
-            }
-
-            return dishes;
-        }
-            
             
 
         // Funktion zum Anzeigen der Schaltfläche zum Speichern des Essensplans
@@ -598,71 +559,75 @@ function hideSaveButton() {
             const year = getYear(date); // Jahr
             console.log('Jahr: ' + year);
             // calendar_week_year: beide Integer-Werte werden kombiniert und als Integer gespeichert. Es sollen jedoch nicht die beiden Wert addiert werden, sondern die Kalenderwoche soll an das Jahr angehängt werden.
-            const calendar_week_year = parseInt('' + year + week);
+            const calendar_week_year = getCalendarWeekYear(year, week);
             // jetzt in Integer umwandeln
             
             console.log('calendar_week_year: ' + calendar_week_year);
 
             // wenn die Kalenderwoche bereits in der Datenbank vorhanden ist, soll eine Fehlermeldung ausgegeben werden und der Essensplan nicht gespeichert werden.
             // Deklaration und Initialisierung von mealplan zu Beginn der Funktion
-    let mealplan;
+            let mealplan;
 
-    try {
-        // Überprüfe, ob der Essensplan bereits in der Datenbank vorhanden ist
-        const response = await fetch(`/api/MealPlans/${calendar_week_year}`);
-        // Statuscode der Antwort auswerten
-        if (response.status === 200) {
-            // wenn die Antwort den Statuscode 200 hat, ist der Essensplan bereits vorhanden
-            alert('Fehler beim Speichern des Essensplans. Der Essensplan ist bereits vorhanden.');
-            return;
-        }
-    } catch (error) {
-        console.error(error);
-        alert('Fehler beim Speichern des Essensplans oder beim Abfragen der Datenbank. Fehlercode: ' + error.status);
-    }
+            try {
+                // Überprüfe, ob der Essensplan bereits in der Datenbank vorhanden ist
+                const response = await fetch(`/api/MealPlans/${calendar_week_year}`);
+                // Statuscode der Antwort auswerten
+                if (response.status === 200) {
+                    // wenn die Antwort den Statuscode 200 hat, ist der Essensplan bereits vorhanden
+                    alert('Fehler beim Speichern des Essensplans. Der Essensplan ist bereits vorhanden.');
+                    // Leere das Eingabefeld
+                    weekPicker.textContent = '';
+                    // Probiere alle Möglichkeiten, den Wert des Eingabefeldes zu leeren
 
-    try {
-        // Lese den Essensplan aus der Tabelle aus
-        const mealPlan = getMealPlan();
-        console.log('Essensplan: ' + mealPlan);
+                    return;
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Fehler beim Speichern des Essensplans oder beim Abfragen der Datenbank. Fehlercode: ' + error.status);
+            }
 
-        // Der Essensplan soll als ID die Kalenderwoche und das Jahr haben und als Inhalt die Namen der Gerichte mit Komma getrennt.
-        // Erstelle ein Array mit den Namen der Gerichte
-        const dishes = [];
-        mealPlan.forEach(dish => {
-            dishes.push(dish.name);
-        });
-        // Erstelle einen String mit den Namen der Gerichte mit Komma getrennt
-        const dishesString = dishes.join(', ');
-        console.log('Gerichte: ' + dishesString);
+            try {
+                // Lese den Essensplan aus der Tabelle aus
+                const mealPlan = getMealPlan();
+                console.log('Essensplan: ' + mealPlan);
 
-        // Erstelle eine neue Instanz von Mealplan
-        mealplan = {
-            // Die DB erwartet die Attribute year (JahrKalenderwoche) und IDs der dishes (Gerichte) als String mit Komma getrennt
-            calendar_week_year: calendar_week_year,
-            dishes: dishesString // IDs der Gerichte als String mit Komma getrennt
-        };
+                // Der Essensplan soll als ID die Kalenderwoche und das Jahr haben und als Inhalt die Namen der Gerichte mit Komma getrennt.
+                // Erstelle ein Array mit den Namen der Gerichte
+                const dishes = [];
+                mealPlan.forEach(dish => {
+                    dishes.push(dish.name);
+                });
+                // Erstelle einen String mit den Namen der Gerichte mit Komma getrennt
+                const dishesString = dishes.join(', ');
+                console.log('Gerichte: ' + dishesString);
 
-        // Der Essensplan ist noch nicht in der Datenbank, also speichere ihn
-        const mealplanResponse = await fetch('/api/MealPlans', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(mealplan),
-        });
+                // Erstelle eine neue Instanz von Mealplan
+                mealplan = {
+                    // Die DB erwartet die Attribute year (JahrKalenderwoche) und IDs der dishes (Gerichte) als String mit Komma getrennt
+                    calendar_week_year: calendar_week_year,
+                    dishes: dishesString // IDs der Gerichte als String mit Komma getrennt
+                };
 
-        if (mealplanResponse.ok) {
-            alert('Essensplan wurde erfolgreich gespeichert.');
-            // Leere die Eingabefelder
-            weekPicker.value = '';
-        } else {
-            throw new Error('Fehler beim Speichern des Essensplans.');
-        }
-    } catch (error) {
-        console.error(error);
-        alert('Fehler beim Speichern des Essensplans oder beim Abfragen der Datenbank. Code: ' + error.status);
-    }
+                // Der Essensplan ist noch nicht in der Datenbank, also speichere ihn
+                const mealplanResponse = await fetch('/api/MealPlans', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(mealplan),
+                });
+
+                if (mealplanResponse.ok) {
+                    alert('Essensplan wurde erfolgreich gespeichert.');
+                    // Leere die Eingabefelder
+                    weekPicker.value = '';
+                } else {
+                    throw new Error('Fehler beim Speichern des Essensplans.');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Fehler beim Speichern des Essensplans oder beim Abfragen der Datenbank. Code: ' + error.status);
+            }
         }
 
         function getCalendarWeek(dateString) {
@@ -798,3 +763,183 @@ function hideSaveButton() {
 
             return today;
         }
+
+        function formatDate(date) {
+            // diese Funktion nimmt ein Datum als Parameter und gibt das Datum im Format DD.MM.YYYY als String zurück
+
+            date = new Date(date);
+            var dd = date.getDate();
+            var mm = date.getMonth()+1;
+            var yyyy = date.getFullYear();
+
+            if (dd < 10)
+                dd = '0' + dd;
+            // Add leading zero if the month is less than 10
+            if (mm < 10)
+                mm = '0' + mm;
+
+            date = dd + '.' + mm + '.' + yyyy;
+
+            return date;
+        }
+
+
+        function getMonday(date) {
+            // diese Funktion nimmt ein Datum als Parameter und gibt das Datum des Montags der Woche als Date-Objekt zurück, in der das Datum liegt
+
+            date = new Date(date);
+            var day = date.getDay(),
+                diff = date.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
+            var monday = new Date(date.setDate(diff));
+            
+            return monday;
+        }
+
+        // Funktion zum Ermitteln eines Datums anhand eines Datums und einer Anzahl von Tagen
+        // Parameter: date
+        // Rückgabe: date + days
+        function addDays(date, days) {
+            var result = new Date(date);
+            result.setDate(result.getDate() + days);
+            console.log(result);
+            return result;
+            
+        }
+
+        // Funktion zum Ermitteln der nächsten calendar_week_year nach einer calendar_week_year, für welche ein Essensplan in der Datenbank vorhanden ist
+        // Parameter: calendar_week_year
+        // Rückgabe: calendar_week_year
+        async function getNextMealPlanWeek(calendar_week_year) {
+            if (calendar_week_year === null) {
+                console.log('getNextMealPlanWeek: calendar_week_year ist null.');
+                return null;
+            }
+            try {
+              const response = await fetch(`/api/MealPlans/next/${calendar_week_year}`);
+              if (response.status === 200) {
+                const mealplanWeek = await response.json();
+                console.log("Nächster Essensplan nach " + calendar_week_year + ": " + mealplanWeek);
+          
+                // Überprüfe, ob mealplanWeek nicht null oder undefined ist
+                if (mealplanWeek) {
+                  return mealplanWeek;
+                } else {
+                  console.log('getNextMealPlanWeek: Kein nächster Mealplan vorhanden.');
+                  return null;
+                }
+              }
+            } catch (error) {
+              console.error(error);
+              return null;
+            }
+          }
+          
+          
+
+        // Funktion zum Abrufen des Mealplans für eine bestimmte Woche
+        // Parameter: calendar_week_year
+        // Rückgabe: Array mit Gerichten
+        async function getMealPlanForWeek(calendar_week_year) {
+            console.log('calendar_week_year: ' + calendar_week_year);
+            let mealplan;
+            var dish_names_array = [];
+            var dishes = [];
+
+            try {
+                const response = await fetch(`/api/MealPlans/${calendar_week_year}`);
+                if (response.status === 200) {
+                    mealplan = await response.json();
+                    const dish_names = mealplan.dish_names;
+                    dish_names_array = dish_names.split(', ');
+                    console.log('dish_names_array: ' + dish_names_array);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Fehler beim Abrufen des Essensplans oder beim Abfragen der Datenbank. Fehlercode: ' + error.status);
+            }
+
+            try {
+                for (let i = 0; i < dish_names_array.length; i++) {
+                    const response = await fetch(`/api/dishes/${dish_names_array[i]}`);
+                    const dish = await response.json();
+                    // console.log('Datentyp von dish: ' + typeof dish);
+                    // console.log('Name von Dish: ' + dish.name);
+                    // console.log('Zutaten von Dish: ' + dish.ingredients);
+                    dishes.push(dish);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Fehler beim Abrufen der Gerichte oder beim Abfragen der Datenbank. Fehlercode: ' + error.status);
+            }
+
+            return dishes;
+        }
+
+        // Funktion zum Ermitteln des nächsten Mealplans
+        // Parameter: calendar_week_year
+        // Rückgabe: Array mit Gerichten des nächsten Mealplans
+        async function getNextMealPlan(calendar_week_year) {
+            const nextMealPlanWeek = await getNextMealPlanWeek(calendar_week_year);
+          
+            if (nextMealPlanWeek === null) {
+              console.log('getNextMealPlan: Kein nächster Mealplan vorhanden.');
+              return null;
+            }
+          
+            
+          
+            if (displayedCalendarWeekYear !== undefined) {
+              console.log('getNextMealPlan: getMealPlanForWeek aufgerufen.');
+              displayedCalendarWeekYear = nextMealPlanWeek;  // Aktualisiere displayedCalendarWeekYear
+              return getMealPlanForWeek(displayedCalendarWeekYear);
+            } else {
+              console.log('getNextMealPlan: displayedCalendarWeekYear ist undefined.');
+              return null;
+            }
+          }
+          
+          
+          
+
+        async function getAndDisplayNextMealPlan() {
+            const nextMealPlan = await getNextMealPlan(displayedCalendarWeekYear);
+          
+            // Überprüfe, ob es einen nächsten Mealplan gibt
+            if (nextMealPlan !== null && nextMealPlan.length > 0) {
+                console.log('getAndDisplayNextMealPlan: Mealplan:' + nextMealPlan);
+              displayMealPlan(nextMealPlan);
+              // Überschrift currentMealPlanHeader aktualisieren
+
+              console.log('getAndDisplayNextMealPlan: displayMealPlan aufgerufen.');
+            } else {
+              console.log('getAndDisplayNextMealPlan: Kein nächster Mealplan vorhanden.');
+            }
+          }
+          
+
+        // Funktion zum Ermitteln der größten calendar_week_year, für welche ein Essensplan in der Datenbank vorhanden ist
+        async function getLatestMealPlanWeek() {
+            try {
+                const response = await fetch(`/api/MealPlans/last`);
+                if (response.status === 200) {
+                    const mealplanWeek = await response.json();
+                    console.log("Letzter Essensplan: " + mealplanWeek);
+                    return mealplanWeek;
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Fehler beim Abrufen des Essensplans oder beim Abfragen der Datenbank. Fehlercode: ' + error.status);
+            }
+        }
+
+        async function handleFowardButtonClick() {
+            if (displayedCalendarWeekYear !== undefined) {
+              await getAndDisplayNextMealPlan();
+            } else {
+              console.log('handleButtonClick: displayedCalendarWeekYear ist undefined. Warte auf Initialisierung.');
+              // Füge hier den Code hinzu, um auf die Initialisierung von displayedCalendarWeekYear zu warten
+              // Beispielsweise könntest du hier eine Funktion aufrufen, die die Initialisierung von displayedCalendarWeekYear sicherstellt.
+            }
+          }
+
+          

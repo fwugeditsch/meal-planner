@@ -60,9 +60,27 @@
 
         <button id="generatePlan" onclick="generateMealPlan()">Essensplan generieren</button>
 
-        <table class="outer-table" id="mealPlanTable">
-            <!-- Hier werden die Gerichte dynamisch hinzugefügt -->
-        </table>
+        <section class = "mealplan">
+
+            <!-- section für Buttons, um zum vorherigen oder nächsten Mealplan zu gelangen und currentMealPlanHeader -->
+            <section class="mealplan-header">
+                <!-- links vom Essensplan ein Button, um zum vorherigen Essensplan zu gelangen -->
+                <button id="previousMealPlan" onclick="getPreviousMealPlan()">
+                    <img src="img/white arrow left.png" alt="whiteArrowLeft" width="20" height="20">
+                </button>
+                <!-- Textfeld freihalten für den Text "Aktueller Essensplan für KW XX (XX.XX.XXXX - XX.XX.XXXX)" -->
+                <h2 id="currentMealPlanHeader"></h2>
+                <!-- rechts vom Essensplan ein Button, um zum nächsten Essensplan zu gelangen -->
+                <button id="nextMealPlan" onclick="handleFowardButtonClick()">
+                    <img src="img/white arrow right.png" alt="whiteArrowRight" width="20" height="20">
+                </button>
+            </section>
+
+            <table class="outer-table" id="mealPlanTable">
+                <!-- Hier werden die Gerichte dynamisch hinzugefügt -->
+            </table>
+
+        </section>
         
         <!-- Die beiden Buttons savePlan und viewDishes schön nebeneinander und zentriert darstelle-->
         <br>
@@ -79,6 +97,7 @@
                 <h2>Essensplan speichern</h2>
                 <!-- Eingabe für Kalenderwoche -->
                 <input type="text" id="weekPicker" class="weekPicker">
+                <!-- automatisch aktuelle Kalenderwoche auswählen -->
                 <script>
                     (function ( $ ) {
                         $( "#weekPicker" ).weekpicker();
@@ -99,28 +118,28 @@
     
         // Es soll automatisch beim Laden der Seite der Mealplan für die aktuelle Woche angezeigt werden, sofern es einen gibt
         // Datum im Format DD/MM/YYYY
-        const currentDate = getCurrentDate(); // eigene function
-        console.log("Das aktuelle Datum ist: " + currentDate);
+        const currentWeek = getCalendarWeek(currentDate); // Kalenderwoche ermitteln
+        const calendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate)); // Kalenderwoche und Jahr im Format JJJJWW ermitteln
+        // console.log("Das aktuelle Jahr und die aktuelle Kalenderwoche sind: " + calendarWeekYear);
     
-        const currentWeek = getCalendarWeek(currentDate); // eigene function
-        // Nutzen der Funktion getMealplanForWeek aus script.js
-        console.log("Die aktuelle Kalenderwoche ist: " + currentWeek);
-    
-        const calendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate)); // eigene function
-        console.log("Das aktuelle Jahr und die aktuelle Kalenderwoche sind: " + calendarWeekYear);
-    
-        // Nutzen der Funktion getMealplanForWeek aus script.js
-        getMealPlanForWeek(calendarWeekYear)
+        getMealPlanForWeek(calendarWeekYear) // Mealplan für die aktuelle Kalenderwoche ermitteln
             .then((currentMealPlan) => {
                 if (currentMealPlan.length > 0) {
+
+                    currentMonday = getMonday(new Date()); // Montag der aktuellen Woche
+                    currentLastDay = addDays(currentMonday, currentMealPlan.length - 1); // letzter Tag des Mealplans
+                    document.getElementById("currentMealPlanHeader").innerHTML = "Aktueller Essensplan für KW " + currentWeek + " (" + formatDate(currentMonday) + " - " + formatDate(currentLastDay) + ")";
                     // Ausgabe des aktuellen Mealplans
                     // Der Mealplan wird nur angezeigt, wenn er vorhanden ist
                     displayMealPlan(currentMealPlan);
-                    console.log("Der aktuelle Mealplan wird angezeigt");
-                }
+                    
+                    // console.log("Der aktuelle Mealplan wird angezeigt");
+                } else
+                    console.error("Für die aktuelle Woche gibt es keinen Mealplan");
+                
             })
             .catch((error) => {
-                console.error(error);
+                console.error("Fehler beim Laden des Mealplans für die aktuelle Woche: " + error);
                 // Handle Fehler, z.B. durch eine Benachrichtigung an den Benutzer
             });
     </script>
