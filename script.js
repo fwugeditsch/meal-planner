@@ -138,7 +138,11 @@ function hideSaveButton() {
 
         // Anzeigen des Essensplans in der Tabelle
         displayMealPlan(mealPlan);
-        displayedCalendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate));
+        // class mealplan-header wird ausgeblendt
+        // alle Elemente mit der Klasse mealplan-header werden ausgeblendet
+        document.querySelectorAll('.mealplan-header').forEach((element) => {
+            element.style.visibility = 'hidden';
+        });
 
     }
 
