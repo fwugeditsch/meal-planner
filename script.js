@@ -3,7 +3,8 @@ let availableDishes = [];
 
 const currentDate = getCurrentDate();
 var displayedCalendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate));
-// var latestMealPlanWeekYear = getLatestMealPlanWeek();
+var latestMealPlanWeekYear = getLatestMealPlanWeek();
+console.log('latestMealPlanWeekYear: ' + latestMealPlanWeekYear);
 
 // Hier eine Funktion zum Abrufen aller Gerichte aus der Datenbank
 async function fetchAvailableDishes() {
@@ -795,10 +796,26 @@ function hideSaveButton() {
             return monday;
         }
 
+        function getDateFromWeekAndYear(year, week) {
+            // diese Funktion nimmt ein Jahr und eine Kalenderwoche als Parameter und gibt das Datum des Montags der Woche als Date-Objekt zurück, in der das Datum liegt
+            // Erstelle ein neues Date-Objekt mit dem 1. Januar des gegebenen Jahres
+            var date = new Date(year, 0, 1);
+        
+            // Berechne den Unterschied in Tagen für die angegebene Woche
+            var daysToAdd = (week - 1) * 7;
+        
+            // Setze das Datum auf den Montag der angegebenen Woche
+            date.setDate(date.getDate() + daysToAdd);
+        
+            return date;
+        }
+
         // Funktion zum Ermitteln eines Datums anhand eines Datums und einer Anzahl von Tagen
         // Parameter: date
         // Rückgabe: date + days
         function addDays(date, days) {
+            // AUsgabe zum debuggen
+            console.log('addDays: date: ' + date);
             var result = new Date(date);
             result.setDate(result.getDate() + days);
             console.log(result);
@@ -825,6 +842,34 @@ function hideSaveButton() {
                   return mealplanWeek;
                 } else {
                   console.log('getNextMealPlanWeek: Kein nächster Mealplan vorhanden.');
+                  return null;
+                }
+              }
+            } catch (error) {
+              console.error(error);
+              return null;
+            }
+          }
+
+        // Funktion getLastMealPlanWeek
+        // Parameter: calendar_week_year
+        // Rückgabe: calendar_week_year
+        async function getLastMealPlanWeek(calendar_week_year) {
+            if (calendar_week_year === null) {
+                console.log('getLastMealPlanWeek: calendar_week_year ist null.');
+                return null;
+            }
+            try {
+              const response = await fetch(`/api/MealPlans/previous/${calendar_week_year}`);
+              if (response.status === 200) {
+                const mealplanWeek = await response.json();
+                console.log("Letzter Essensplan vor " + calendar_week_year + ": " + mealplanWeek);
+          
+                // Überprüfe, ob mealplanWeek nicht null oder undefined ist
+                if (mealplanWeek) {
+                  return mealplanWeek;
+                } else {
+                  console.log('getLastMealPlanWeek: Kein letzter Mealplan vorhanden.');
                   return null;
                 }
               }
@@ -876,70 +921,289 @@ function hideSaveButton() {
         }
 
         // Funktion zum Ermitteln des nächsten Mealplans
-        // Parameter: calendar_week_year
-        // Rückgabe: Array mit Gerichten des nächsten Mealplans
-        async function getNextMealPlan(calendar_week_year) {
-            const nextMealPlanWeek = await getNextMealPlanWeek(calendar_week_year);
-          
-            if (nextMealPlanWeek === null) {
-              console.log('getNextMealPlan: Kein nächster Mealplan vorhanden.');
-              return null;
-            }
-          
-            
-          
-            if (displayedCalendarWeekYear !== undefined) {
-              console.log('getNextMealPlan: getMealPlanForWeek aufgerufen.');
-              displayedCalendarWeekYear = nextMealPlanWeek;  // Aktualisiere displayedCalendarWeekYear
-              return getMealPlanForWeek(displayedCalendarWeekYear);
-            } else {
-              console.log('getNextMealPlan: displayedCalendarWeekYear ist undefined.');
-              return null;
-            }
-          }
+// Parameter: calendar_week_year
+// Rückgabe: Array mit Gerichten des nächsten Mealplans
+async function getNextMealPlan(calendar_week_year) {
+    const nextMealPlanWeek = await getNextMealPlanWeek(calendar_week_year);
+  
+    if (nextMealPlanWeek === null) {
+      console.log('getNextMealPlan: Kein nächster Mealplan vorhanden.');
+      return null;
+    }
+  
+    const maxMealPlanWeek = await fetchMaxMealPlanWeek();
+    const nextMealPlanIsMax = nextMealPlanWeek === maxMealPlanWeek;
+  
+    if (displayedCalendarWeekYear !== undefined) {
+      console.log('getNextMealPlan: getMealPlanForWeek aufgerufen.');
+      displayedCalendarWeekYear = nextMealPlanWeek;  // Aktualisiere displayedCalendarWeekYear
+      // Ausgabe zum debuggen
+      console.log('getNextMealPlan: displayedCalendarWeekYear: ' + displayedCalendarWeekYear);
+      updateButtons(nextMealPlanIsMax);
+      return getMealPlanForWeek(displayedCalendarWeekYear);
+    } else {
+      console.log('getNextMealPlan: displayedCalendarWeekYear ist undefined.');
+      return null;
+    }
+  }
+  
+  // Funktion zum Ermitteln des vorherigen Mealplans
+  // Parameter: calendar_week_year
+  // Rückgabe: Array mit Gerichten des vorherigen Mealplans
+  async function getPreviousMealPlan(calendar_week_year) {
+    const previousMealPlanWeek = await getLastMealPlanWeek(calendar_week_year);
+  
+    if (previousMealPlanWeek === null) {
+      console.log('getPreviousMealPlan: Kein letzter Mealplan vorhanden.');
+      return null;
+    }
+  
+    const minMealPlanWeek = await fetchMinMealPlanWeek();
+    const previousMealPlanIsMin = previousMealPlanWeek === minMealPlanWeek;
+  
+    if (displayedCalendarWeekYear !== undefined) {
+      console.log('getPreviousMealPlan: getMealPlanForWeek aufgerufen.');
+      displayedCalendarWeekYear = previousMealPlanWeek;  // Aktualisiere displayedCalendarWeekYear
+      // Ausgabe zum debuggen
+      console.log('getPreviousMealPlan: displayedCalendarWeekYear: ' + displayedCalendarWeekYear);
+      updateButtons(previousMealPlanIsMin);
+      return getMealPlanForWeek(displayedCalendarWeekYear);
+    } else {
+      console.log('getPreviousMealPlan: displayedCalendarWeekYear ist undefined.');
+      return null;
+    }
+  }
+  
+  // Funktion zum Aktualisieren der Vorwärts- und Rückwärts-Buttons
+function updateButtons(disableForward, disableBackward) {
+    const forwardButton = document.getElementById('nextMealPlan');
+    const backwardButton = document.getElementById('previousMealPlan');
+
+    forwardButton.disabled = disableForward;
+    backwardButton.disabled = disableBackward;
+
+    // Wenn ein Button deaktivierte ist, soll die Hintergrundfarbe des Buttons #212C4D sein, ansonsten #6C72FF
+    // Wenn ein Button nicht deaktiviert ist, soll der Hover-Effekt des Buttons aktiviert sein, ansonsten nicht
+    if (disableForward) {
+        forwardButton.style.backgroundColor = '#212C4D';
+        forwardButton.style.color = 'lightgrey';
+        forwardButton.style.border = '1px rgb(56, 56, 56) solid';
+        forwardButton.style.cursor = 'default';
+    }
+    else {
+        forwardButton.style.backgroundColor = '#6C72FF';
+        forwardButton.style.color = 'white';
+        forwardButton.style.border = '1px #6C72FF solid';
+        forwardButton.style.cursor = 'pointer';
+    }
+
+    if (disableBackward) {
+        backwardButton.style.backgroundColor = '#212C4D';
+        backwardButton.style.color = 'lightgrey';
+        backwardButton.style.border = '1px rgb(56, 56, 56) solid';
+        backwardButton.style.cursor = 'default';
+    }
+    else {
+        backwardButton.style.backgroundColor = '#6C72FF';
+        backwardButton.style.color = 'white';
+        backwardButton.style.border = '1px #6C72FF solid';
+        backwardButton.style.cursor = 'pointer';
+    }
+}
+
+  
+  // Funktion zum Abrufen des maximalen calendar_week_year
+  async function fetchMaxMealPlanWeek() {
+    try {
+      const response = await fetch('/api/MealPlans/max');
+      const maxMealPlanWeek = await response.json();
+      // Ausgabe zum debuggen
+        console.log('fetchMaxMealPlanWeek: maxMealPlanWeek: ' + maxMealPlanWeek);
+      return maxMealPlanWeek;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+  
+  // Funktion zum Abrufen des minimalen calendar_week_year
+  async function fetchMinMealPlanWeek() {
+    try {
+      const response = await fetch('/api/MealPlans/min');
+      const minMealPlanWeek = await response.json();
+        // Ausgabe zum debuggen
+        console.log('fetchMinMealPlanWeek: minMealPlanWeek: ' + minMealPlanWeek);
+      return minMealPlanWeek;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+  
           
           
           
 
-        async function getAndDisplayNextMealPlan() {
-            const nextMealPlan = await getNextMealPlan(displayedCalendarWeekYear);
-          
-            // Überprüfe, ob es einen nächsten Mealplan gibt
-            if (nextMealPlan !== null && nextMealPlan.length > 0) {
-                console.log('getAndDisplayNextMealPlan: Mealplan:' + nextMealPlan);
-              displayMealPlan(nextMealPlan);
-              // Überschrift currentMealPlanHeader aktualisieren
+        // Funktion zum Abrufen und Anzeigen des nächsten Mealplans
+async function getAndDisplayNextMealPlan() {
+    console.log("Nächste Woche mit bestehendem Mealplan nach " + displayedCalendarWeekYear + " wird gesucht");
+    const nextMealPlan = await getNextMealPlan(displayedCalendarWeekYear);
+  
+    // Überprüfe, ob es einen nächsten Mealplan gibt
+    if (nextMealPlan !== null && nextMealPlan.length > 0) {
+      console.log('getAndDisplayNextMealPlan: Mealplan:', nextMealPlan);
+      displayMealPlan(nextMealPlan);
+      setNewDate(displayedCalendarWeekYear);
+      // Überschrift currentMealPlanHeader aktualisieren
+  
+      console.log('getAndDisplayNextMealPlan: displayMealPlan aufgerufen.');
+    } else {
+      console.log('getAndDisplayNextMealPlan: Kein nächster Mealplan vorhanden.');
+    }
+  }
+  
+  // Funktion zum Abrufen und Anzeigen des vorherigen Mealplans
+  async function getAndDisplayPreviousMealPlan() {
+    const lastMealPlanWeek = await getLastMealPlanWeek(displayedCalendarWeekYear);
+  
+    // Überprüfe, ob es einen letzten Mealplan gibt
+    if (lastMealPlanWeek !== null) {
+      console.log('getAndDisplayPreviousMealPlan: lastMealPlanWeek:', lastMealPlanWeek);
+      const lastMealPlan = await getMealPlanForWeek(lastMealPlanWeek);
+      console.log('getAndDisplayPreviousMealPlan: lastMealPlan:', lastMealPlan);
+      displayMealPlan(lastMealPlan);
+      setNewDate(lastMealPlanWeek);
+      // Überschrift currentMealPlanHeader aktualisieren
+    } else {
+      console.log('getAndDisplayPreviousMealPlan: Kein letzter Mealplan vorhanden.');
+    }
+  }
+  
 
-              console.log('getAndDisplayNextMealPlan: displayMealPlan aufgerufen.');
-            } else {
-              console.log('getAndDisplayNextMealPlan: Kein nächster Mealplan vorhanden.');
-            }
-          }
-          
+  async function handleFowardButtonClick() {
+    try {
+        if (displayedCalendarWeekYear !== undefined) {
+            const nextMealPlanWeek = await getNextMealPlanWeek(displayedCalendarWeekYear);
+            if (nextMealPlanWeek !== null) {
+                const nextMealPlan = await getMealPlanForWeek(nextMealPlanWeek);
+                if (nextMealPlan.length > 0) {
+                    displayMealPlan(nextMealPlan);
+                    setNewDate(nextMealPlanWeek);
+                    displayedCalendarWeekYear = nextMealPlanWeek;
 
-        // Funktion zum Ermitteln der größten calendar_week_year, für welche ein Essensplan in der Datenbank vorhanden ist
-        async function getLatestMealPlanWeek() {
-            try {
-                const response = await fetch(`/api/MealPlans/last`);
-                if (response.status === 200) {
-                    const mealplanWeek = await response.json();
-                    console.log("Letzter Essensplan: " + mealplanWeek);
-                    return mealplanWeek;
+                    // Setzen Sie disableBackward auf false, da es jetzt einen vorherigen Mealplan gibt
+                    updateButtons(false, false);
+                } else {
+                    console.log('handleFowardButtonClick: Kein nächster Mealplan vorhanden.');
+
+                    // Setzen Sie disableForward auf true, da es keinen nächsten Mealplan gibt
+                    updateButtons(true, false);
                 }
-            } catch (error) {
-                console.error(error);
-                alert('Fehler beim Abrufen des Essensplans oder beim Abfragen der Datenbank. Fehlercode: ' + error.status);
+            } else {
+                console.log('handleFowardButtonClick: Kein nächster Mealplan vorhanden.');
+
+                // Setzen Sie disableForward auf true, da es keinen nächsten Mealplan gibt
+                updateButtons(true, false);
+            }
+        } else {
+            console.log('handleFowardButtonClick: displayedCalendarWeekYear ist undefined. Warte auf Initialisierung.');
+
+            // Setzen Sie beide Buttons auf true, da displayedCalendarWeekYear undefined ist
+            updateButtons(true, true);
+        }
+    } catch (error) {
+        console.error('Fehler beim Vorwärts-Button:', error);
+
+        // Setzen Sie beide Buttons auf true, wenn ein Fehler auftritt
+        updateButtons(true, true);
+    }
+}
+
+async function handleBackwardButtonClick() {
+    try {
+        if (displayedCalendarWeekYear !== undefined) {
+            const lastMealPlanWeek = await getLastMealPlanWeek(displayedCalendarWeekYear);
+            if (lastMealPlanWeek !== null) {
+                const lastMealPlan = await getMealPlanForWeek(lastMealPlanWeek);
+                if (lastMealPlan.length > 0) {
+                    displayMealPlan(lastMealPlan);
+                    setNewDate(lastMealPlanWeek);
+                    displayedCalendarWeekYear = lastMealPlanWeek;
+
+                    // Setzen Sie disableForward auf false, da es jetzt einen nächsten Mealplan gibt
+                    updateButtons(false, false);
+                } else {
+                    console.log('handleBackwardButtonClick: Kein letzter Mealplan vorhanden.');
+
+                    // Setzen Sie disableBackward auf true, da es keinen vorherigen Mealplan gibt
+                    updateButtons(false, true);
+                }
+            } else {
+                console.log('handleBackwardButtonClick: Kein letzter Mealplan vorhanden.');
+
+                // Setzen Sie disableBackward auf true, da es keinen vorherigen Mealplan gibt
+                updateButtons(false, true);
+            }
+        } else {
+            console.log('handleBackwardButtonClick: displayedCalendarWeekYear ist undefined. Warte auf Initialisierung.');
+
+            // Setzen Sie beide Buttons auf true, da displayedCalendarWeekYear undefined ist
+            updateButtons(true, true);
+        }
+    } catch (error) {
+        console.error('Fehler beim Rückwärts-Button:', error);
+
+        // Setzen Sie beide Buttons auf true, wenn ein Fehler auftritt
+        updateButtons(true, true);
+    }
+}
+
+
+
+        // Funktion zum Setzen eines neuen Datums in der h2 currentMealPlanHeader mit dem Text "Essensplan für KW XX (DD.MM.YYYY - DD.MM.YYYY)"
+        // Parameter: calendar_week_year (Integer) im Format JJJJKW
+        // Rückgabe: none
+        async function setNewDate(calendar_week_year) {
+            // Ausgabe von calendar_week_year zum debuggen mit Datentyp und Inhalt
+            console.log('setNewDate: calendar_week_year: ' + calendar_week_year);
+            console.log('setNewDate: Datentyp von calendar_week_year: ' + typeof calendar_week_year);
+            // Überprüfe, ob calendar_week_year nicht null oder undefined ist
+            if (calendar_week_year) {
+                const calendar_week_year_String = calendar_week_year.toString();
+                const week = calendar_week_year_String.substring(4, 6);
+                const year = calendar_week_year_String.substring(0, 4);
+                // Ausgabe von week und year zum debuggen
+                console.log('setNewDate: week: ' + week);
+                console.log('setNewDate: year: ' + year);
+                var monday = getMonday(getDateFromWeekAndYear(year, week));
+                var sunday = addDays(monday, 6);
+                // Ausgabe von Monday und Sunday zum debuggen
+                console.log('setNewDate: monday: ' + monday);
+                console.log('setNewDate: sunday: ' + sunday);
+                const mondayFormatted = formatDate(monday);
+                const sundayFormatted = formatDate(sunday);
+                const currentMealPlanHeader = document.getElementById('currentMealPlanHeader');
+                currentMealPlanHeader.textContent = `Essensplan für KW ${week} (${mondayFormatted} - ${sundayFormatted})`;
+            } else {
+                console.log('setNewDate: calendar_week_year ist null oder undefined.');
             }
         }
 
-        async function handleFowardButtonClick() {
-            if (displayedCalendarWeekYear !== undefined) {
-              await getAndDisplayNextMealPlan();
-            } else {
-              console.log('handleButtonClick: displayedCalendarWeekYear ist undefined. Warte auf Initialisierung.');
-              // Füge hier den Code hinzu, um auf die Initialisierung von displayedCalendarWeekYear zu warten
-              // Beispielsweise könntest du hier eine Funktion aufrufen, die die Initialisierung von displayedCalendarWeekYear sicherstellt.
+    // FUnktion zum Abfragen der letzten mealplanWeek für welche ein Mealplan in der Datenbank vorhanden ist mittels API-Call
+    // Parameter: none
+    // Rückgabe: calendar_week_year (Integer) im Format JJJJKW
+    async function getLatestMealPlanWeek() {
+        try {
+            const response = await fetch('/api/MealPlans/last');
+            if (response.status === 200) {
+                const mealplanWeek = await response.json();
+                console.log("Letzter Mealplan in der Datenbank: " + mealplanWeek);
+                return mealplanWeek;
             }
-          }
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
 
           

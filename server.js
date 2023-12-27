@@ -96,6 +96,36 @@ app.get('/api/MealPlans/:calendar_week_year', async (req, res) => {
   }
 });
 
+// API-Endpunkt zum Abrufen des maximalen calendar_week_year
+app.get('/api/MealPlans/max', async (req, res) => {
+  try {
+    const maxMealPlan = await Mealplan.findOne({
+      attributes: [[sequelize.fn('MAX', sequelize.col('calendar_week_year')), 'max_calendar_week_year']]
+    });
+
+    res.status(200).json(maxMealPlan.max_calendar_week_year);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Abrufen des maximalen calendar_week_year');
+  }
+});
+
+// API-Endpunkt zum Abrufen des minimalen calendar_week_year
+app.get('/api/MealPlans/min', async (req, res) => {
+  try {
+    const minMealPlan = await Mealplan.findOne({
+      attributes: [[sequelize.fn('MIN', sequelize.col('calendar_week_year')), 'min_calendar_week_year']]
+    });
+
+    res.status(200).json(minMealPlan.min_calendar_week_year);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Abrufen des minimalen calendar_week_year');
+  }
+});
+
+
+
 
 // Löschen eines gespeicherten Essensplans anhand des Jahres und der Kalenderwoche
 app.delete('/api/MealPlans/:year/:week', async (req, res) => {
@@ -125,8 +155,6 @@ app.get('/api/MealPlans/next/:calendar_week_year', async (req, res) => {
   try {
     const calendar_week_year = req.params.calendar_week_year;
 
-    // Ermittle den Mealplan mit dem gerinsten calendar_week_year, der größer ist als der angegebene calendar_week_year
-    // Code zum Abrufen des Essensplans aus der Datenbank anhand des Werts von calendar_week_year
     const mealplanNext = await Mealplan.findOne({
       where: {
         calendar_week_year: {
@@ -138,16 +166,13 @@ app.get('/api/MealPlans/next/:calendar_week_year', async (req, res) => {
       ]
     });
 
-    // Falls kein Essensplan gefunden wurde, wird 404 zurückgegeben
-    // Falls ein Essensplan gefunden wurde, wird dieser als JSON-Antwort zurückgegeben und der Statuscode 200 gesetzt
-    if (mealplanNext === null) {
+    if (!mealplanNext) {
       res.status(404).json({ message: 'Es wurde kein Essensplan gefunden.' });
       console.log('Es wurde kein Essensplan gefunden.');
-      return null;
+      return;
     }
 
     console.log("Es wurde ein Essensplan gefunden. Datentypprüfung: " + typeof mealplanNext + ". Inhalt: " + mealplanNext);
-    // es soll nur die calendar_week_year zurückgegeben werden
     res.status(200).json(mealplanNext.calendar_week_year);
   } catch (error) {
     console.error(error);
@@ -155,29 +180,37 @@ app.get('/api/MealPlans/next/:calendar_week_year', async (req, res) => {
   }
 });
 
-// API-Endpunkt zum ermitteln der größten calendar_week_year im Format YYYYWW für ein gespeichertes Mealplans
-app.get('/api/MealPlans/last', async (req, res) => {
-  // Ermittle den Mealplan mit dem größten calendar_week_year
-  // Code zum Abrufen des Essensplans aus der Datenbank anhand des Werts von calendar_week_year
-  const mealplanLast = await Mealplan.findOne({
-    order: [
-      ['calendar_week_year', 'DESC']
-    ]
-  });
+// API-Endpunkt zum Abrufen einer calendar_week_year im Format YYYYWW für ein gespeichertes Mealplans vor einem Mealplan mit angegebenem calendar_week_year
+app.get('/api/MealPlans/previous/:calendar_week_year', async (req, res) => {
+  try {
+    const calendar_week_year = req.params.calendar_week_year;
 
-  // Falls kein Essensplan gefunden wurde, wird 404 zurückgegeben
-  // Falls ein Essensplan gefunden wurde, wird dieser als JSON-Antwort zurückgegeben und der Statuscode 200 gesetzt
-  if (mealplanLast === null) {
-    res.status(404).json({ message: 'Es wurde kein Essensplan gefunden.' });
-    console.log('Es wurde kein Essensplan gefunden.');
-    return;
+    const mealplanPrevious = await Mealplan.findOne({
+      where: {
+        calendar_week_year: {
+          [Sequelize.Op.lt]: calendar_week_year
+        }
+      },
+      order: [
+        ['calendar_week_year', 'DESC']
+      ]
+    });
+
+    if (!mealplanPrevious) {
+      res.status(404).json({ message: 'Es wurde kein Essensplan gefunden.' });
+      console.log('Es wurde kein Essensplan gefunden.');
+      return;
+    }
+
+    console.log("Es wurde ein Essensplan gefunden. Datentypprüfung: " + typeof mealplanPrevious + ". Inhalt: " + mealplanPrevious);
+    res.status(200).json(mealplanPrevious.calendar_week_year);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Abrufen des Essensplans');
   }
+});
 
-  console.log("Es wurde ein Essensplan gefunden. Datentypprüfung: " + typeof mealplanLast + ". Inhalt: " + mealplanLast);
-  // es soll nur die calendar_week_year zurückgegeben werden
-  res.status(200).json(mealplanLast.calendar_week_year);
-}
-);
+
 
 
 
