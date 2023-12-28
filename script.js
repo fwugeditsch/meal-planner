@@ -1019,7 +1019,7 @@ function updateButtons(disableForward, disableBackward) {
   // Funktion zum Abrufen des maximalen calendar_week_year
   async function fetchMaxMealPlanWeek() {
     try {
-      const response = await fetch('/api/MealPlans/max');
+      const response = await fetch('/api/MealPlans/calendarYear/max');
       const maxMealPlanWeek = await response.json();
       // Ausgabe zum debuggen
         console.log('fetchMaxMealPlanWeek: maxMealPlanWeek: ' + maxMealPlanWeek);
@@ -1033,7 +1033,7 @@ function updateButtons(disableForward, disableBackward) {
   // Funktion zum Abrufen des minimalen calendar_week_year
   async function fetchMinMealPlanWeek() {
     try {
-      const response = await fetch('/api/MealPlans/min');
+      const response = await fetch('/api/MealPlans/calendarYear/min');
       const minMealPlanWeek = await response.json();
         // Ausgabe zum debuggen
         console.log('fetchMinMealPlanWeek: minMealPlanWeek: ' + minMealPlanWeek);
