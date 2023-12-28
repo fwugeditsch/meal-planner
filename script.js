@@ -3,8 +3,18 @@ let availableDishes = [];
 
 const currentDate = getCurrentDate();
 var displayedCalendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate));
-var latestMealPlanWeekYear = getLatestMealPlanWeek();
-console.log('latestMealPlanWeekYear: ' + latestMealPlanWeekYear);
+var latestMealPlanWeekYear, firstMealPlanWeekYear;
+initializeCalendarWeekYearLimits(); // Initialisieren der globalen Variablen latestMealPlanWeekYear und firstMealPlanWeekYear
+
+// Funktion zum Initialisieren der globalen Variablen
+async function initializeCalendarWeekYearLimits() {
+    try {
+        latestMealPlanWeekYear = await fetchMaxMealPlanWeek();
+        firstMealPlanWeekYear = await fetchMinMealPlanWeek();
+    } catch (error) {
+        console.error('Fehler beim Initialisieren der Kalendergrenzen:', error);
+    }
+}
 
 // Hier eine Funktion zum Abrufen aller Gerichte aus der Datenbank
 async function fetchAvailableDishes() {
@@ -979,16 +989,22 @@ async function getNextMealPlan(calendar_week_year) {
   }
   
   // Funktion zum Aktualisieren der Vorwärts- und Rückwärts-Buttons
-function updateButtons(disableForward, disableBackward) {
+  function updateButtons() {
     const forwardButton = document.getElementById('nextMealPlan');
     const backwardButton = document.getElementById('previousMealPlan');
 
-    forwardButton.disabled = disableForward;
-    backwardButton.disabled = disableBackward;
+    // Überprüfen, ob der nächste Mealplan existiert
+    const hasNextMealPlan = displayedCalendarWeekYear < latestMealPlanWeekYear;
+    // Überprüfen, ob der vorherige Mealplan existiert
+    const hasPreviousMealPlan = displayedCalendarWeekYear > firstMealPlanWeekYear;
+
+    forwardButton.disabled = !hasNextMealPlan;
+    backwardButton.disabled = !hasPreviousMealPlan;
 
     // Wenn ein Button deaktivierte ist, soll die Hintergrundfarbe des Buttons #212C4D sein, ansonsten #6C72FF
     // Wenn ein Button nicht deaktiviert ist, soll der Hover-Effekt des Buttons aktiviert sein, ansonsten nicht
-    if (disableForward) {
+    if (forwardButton.disabled) {
+        console.log('forwardButton ist disabled. Weil displayedCalendarWeekYear: ' + displayedCalendarWeekYear + ' und latestMealPlanWeekYear: ' + latestMealPlanWeekYear);
         forwardButton.style.backgroundColor = '#212C4D';
         forwardButton.style.color = 'lightgrey';
         forwardButton.style.border = '1px rgb(56, 56, 56) solid';
@@ -1001,7 +1017,8 @@ function updateButtons(disableForward, disableBackward) {
         forwardButton.style.cursor = 'pointer';
     }
 
-    if (disableBackward) {
+    if (backwardButton.disabled) {
+        console.log('backwardButton ist disabled. Weil displayedCalendarWeekYear: ' + displayedCalendarWeekYear + ' und firstMealPlanWeekYear: ' + firstMealPlanWeekYear);
         backwardButton.style.backgroundColor = '#212C4D';
         backwardButton.style.color = 'lightgrey';
         backwardButton.style.border = '1px rgb(56, 56, 56) solid';
@@ -1013,6 +1030,7 @@ function updateButtons(disableForward, disableBackward) {
         backwardButton.style.border = '1px #6C72FF solid';
         backwardButton.style.cursor = 'pointer';
     }
+
 }
 
   
@@ -1043,9 +1061,6 @@ function updateButtons(disableForward, disableBackward) {
       return null;
     }
   }
-  
-          
-          
           
 
         // Funktion zum Abrufen und Anzeigen des nächsten Mealplans
@@ -1083,8 +1098,7 @@ async function getAndDisplayNextMealPlan() {
     }
   }
   
-
-  async function handleFowardButtonClick() {
+  async function handleForwardButtonClick() {
     try {
         if (displayedCalendarWeekYear !== undefined) {
             const nextMealPlanWeek = await getNextMealPlanWeek(displayedCalendarWeekYear);
@@ -1094,35 +1108,24 @@ async function getAndDisplayNextMealPlan() {
                     displayMealPlan(nextMealPlan);
                     setNewDate(nextMealPlanWeek);
                     displayedCalendarWeekYear = nextMealPlanWeek;
-
-                    // Setzen Sie disableBackward auf false, da es jetzt einen vorherigen Mealplan gibt
-                    updateButtons(false, false);
                 } else {
-                    console.log('handleFowardButtonClick: Kein nächster Mealplan vorhanden.');
-
-                    // Setzen Sie disableForward auf true, da es keinen nächsten Mealplan gibt
-                    updateButtons(true, false);
+                    console.log('Kein nächster Mealplan vorhanden.');
                 }
             } else {
-                console.log('handleFowardButtonClick: Kein nächster Mealplan vorhanden.');
-
-                // Setzen Sie disableForward auf true, da es keinen nächsten Mealplan gibt
-                updateButtons(true, false);
+                console.log('Kein nächster Mealplan vorhanden.');
             }
         } else {
-            console.log('handleFowardButtonClick: displayedCalendarWeekYear ist undefined. Warte auf Initialisierung.');
-
-            // Setzen Sie beide Buttons auf true, da displayedCalendarWeekYear undefined ist
-            updateButtons(true, true);
+            console.log('displayedCalendarWeekYear ist undefined. Warte auf Initialisierung.');
         }
     } catch (error) {
         console.error('Fehler beim Vorwärts-Button:', error);
-
-        // Setzen Sie beide Buttons auf true, wenn ein Fehler auftritt
-        updateButtons(true, true);
+    } finally {
+        // Aktualisiere die Buttons, unabhängig davon, ob ein Fehler auftritt oder nicht
+        updateButtons();
     }
 }
 
+// Funktion zum Behandeln des Rückwärts-Buttons
 async function handleBackwardButtonClick() {
     try {
         if (displayedCalendarWeekYear !== undefined) {
@@ -1133,32 +1136,20 @@ async function handleBackwardButtonClick() {
                     displayMealPlan(lastMealPlan);
                     setNewDate(lastMealPlanWeek);
                     displayedCalendarWeekYear = lastMealPlanWeek;
-
-                    // Setzen Sie disableForward auf false, da es jetzt einen nächsten Mealplan gibt
-                    updateButtons(false, false);
                 } else {
-                    console.log('handleBackwardButtonClick: Kein letzter Mealplan vorhanden.');
-
-                    // Setzen Sie disableBackward auf true, da es keinen vorherigen Mealplan gibt
-                    updateButtons(false, true);
+                    console.log('Kein letzter Mealplan vorhanden.');
                 }
             } else {
-                console.log('handleBackwardButtonClick: Kein letzter Mealplan vorhanden.');
-
-                // Setzen Sie disableBackward auf true, da es keinen vorherigen Mealplan gibt
-                updateButtons(false, true);
+                console.log('Kein letzter Mealplan vorhanden.');
             }
         } else {
-            console.log('handleBackwardButtonClick: displayedCalendarWeekYear ist undefined. Warte auf Initialisierung.');
-
-            // Setzen Sie beide Buttons auf true, da displayedCalendarWeekYear undefined ist
-            updateButtons(true, true);
+            console.log('displayedCalendarWeekYear ist undefined. Warte auf Initialisierung.');
         }
     } catch (error) {
         console.error('Fehler beim Rückwärts-Button:', error);
-
-        // Setzen Sie beide Buttons auf true, wenn ein Fehler auftritt
-        updateButtons(true, true);
+    } finally {
+        // Aktualisiere die Buttons, unabhängig davon, ob ein Fehler auftritt oder nicht
+        updateButtons();
     }
 }
 
@@ -1192,22 +1183,3 @@ async function handleBackwardButtonClick() {
                 console.log('setNewDate: calendar_week_year ist null oder undefined.');
             }
         }
-
-    // FUnktion zum Abfragen der letzten mealplanWeek für welche ein Mealplan in der Datenbank vorhanden ist mittels API-Call
-    // Parameter: none
-    // Rückgabe: calendar_week_year (Integer) im Format JJJJKW
-    async function getLatestMealPlanWeek() {
-        try {
-            const response = await fetch('/api/MealPlans/last');
-            if (response.status === 200) {
-                const mealplanWeek = await response.json();
-                console.log("Letzter Mealplan in der Datenbank: " + mealplanWeek);
-                return mealplanWeek;
-            }
-        } catch (error) {
-            console.error(error);
-            return null;
-        }
-    }
-
-          
