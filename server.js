@@ -97,7 +97,7 @@ app.get('/api/MealPlans/:calendar_week_year', async (req, res) => {
 });
 
 // API-Endpunkt zum Abrufen des maximalen calendar_week_year
-app.get('/api/MealPlans/byCalendarYear/max', async (req, res) => {
+app.get('/api/MealPlans/calendarYear/max', async (req, res) => {
   // Rückgabe: calendar_week_year in der Form YYYYWW
   try {
     // Ermittle den Mealplan mit dem größten calendar_week_year
@@ -127,7 +127,7 @@ app.get('/api/MealPlans/byCalendarYear/max', async (req, res) => {
 });
 
 // API-Endpunkt zum Abrufen des minimalen calendar_week_year
-app.get('/api/MealPlans/byCalendarYear/min', async (req, res) => {
+app.get('/api/MealPlans/calendarYear/min', async (req, res) => {
   // Rückgabe: calendar_week_year in der Form YYYYWW
   try {
     // Ermittle den Mealplan mit dem kleinsten calendar_week_year
