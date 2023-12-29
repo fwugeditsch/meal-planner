@@ -998,40 +998,98 @@ async function getNextMealPlan(calendar_week_year) {
     // Überprüfen, ob der vorherige Mealplan existiert
     const hasPreviousMealPlan = displayedCalendarWeekYear > firstMealPlanWeekYear;
 
-    forwardButton.disabled = !hasNextMealPlan;
-    backwardButton.disabled = !hasPreviousMealPlan;
+    if(!hasNextMealPlan)
+        disableForwardButton();
+    else
+        enableForwardButton();
 
-    // Wenn ein Button deaktivierte ist, soll die Hintergrundfarbe des Buttons #212C4D sein, ansonsten #6C72FF
-    // Wenn ein Button nicht deaktiviert ist, soll der Hover-Effekt des Buttons aktiviert sein, ansonsten nicht
-    if (forwardButton.disabled) {
-        console.log('forwardButton ist disabled. Weil displayedCalendarWeekYear: ' + displayedCalendarWeekYear + ' und latestMealPlanWeekYear: ' + latestMealPlanWeekYear);
+    if(!hasPreviousMealPlan)
+        disableBackwardButton();
+    else
+        enableBackwardButton();
+
+  }
+
+  function disableForwardButton() {
+    const forwardButton = document.getElementById('nextMealPlan');
+    forwardButton.setAttribute('disabled', '');
+
+    // Farbe zu #212C4D ändern und Hover-Effekt entfernen
+    forwardButton.style.backgroundColor = '#212C4D';
+
+    // Hover-Effekt entfernen
+    forwardButton.addEventListener('mouseover', () => {
         forwardButton.style.backgroundColor = '#212C4D';
-        forwardButton.style.color = 'lightgrey';
-        forwardButton.style.border = '1px rgb(56, 56, 56) solid';
-        forwardButton.style.cursor = 'default';
     }
-    else {
+    );
+
+    // Hover-Effekt entfernen
+    forwardButton.addEventListener('mouseout', () => {
+        forwardButton.style.backgroundColor = '#212C4D';
+    }
+    );
+
+  }
+
+    function enableForwardButton() {
+        const forwardButton = document.getElementById('nextMealPlan');
+        forwardButton.removeAttribute('disabled');
+
+        // Farbe zu #6C72FF ändern und Hover-Effekt mit Farbe #212C4D hinzufügen
         forwardButton.style.backgroundColor = '#6C72FF';
-        forwardButton.style.color = 'white';
-        forwardButton.style.border = '1px #6C72FF solid';
-        forwardButton.style.cursor = 'pointer';
+
+        // Hover-Effekt hinzufügen
+        forwardButton.addEventListener('mouseover', () => {
+            forwardButton.style.backgroundColor = '#212C4D';
+        }
+        );
+
+        // Hover-Effekt hinzufügen
+        forwardButton.addEventListener('mouseout', () => {
+            forwardButton.style.backgroundColor = '#6C72FF';
+        }
+        );
     }
 
-    if (backwardButton.disabled) {
-        console.log('backwardButton ist disabled. Weil displayedCalendarWeekYear: ' + displayedCalendarWeekYear + ' und firstMealPlanWeekYear: ' + firstMealPlanWeekYear);
+    function disableBackwardButton() {
+        const backwardButton = document.getElementById('previousMealPlan');
+        backwardButton.setAttribute('disabled', '');
+
+        // Farbe zu #212C4D ändern und Hover-Effekt entfernen
         backwardButton.style.backgroundColor = '#212C4D';
-        backwardButton.style.color = 'lightgrey';
-        backwardButton.style.border = '1px rgb(56, 56, 56) solid';
-        backwardButton.style.cursor = 'default';
-    }
-    else {
-        backwardButton.style.backgroundColor = '#6C72FF';
-        backwardButton.style.color = 'white';
-        backwardButton.style.border = '1px #6C72FF solid';
-        backwardButton.style.cursor = 'pointer';
+
+        // Hover-Effekt entfernen
+        backwardButton.addEventListener('mouseover', () => {
+            backwardButton.style.backgroundColor = '#212C4D';
+        }
+        );
+
+        // Hover-Effekt entfernen
+        backwardButton.addEventListener('mouseout', () => {
+            backwardButton.style.backgroundColor = '#212C4D';
+        }
+        );
     }
 
-}
+    function enableBackwardButton() {
+        const backwardButton = document.getElementById('previousMealPlan');
+        backwardButton.removeAttribute('disabled');
+
+        // Farbe zu #6C72FF ändern und Hover-Effekt mit Farbe #212C4D hinzufügen
+        backwardButton.style.backgroundColor = '#6C72FF';
+
+        // Hover-Effekt hinzufügen
+        backwardButton.addEventListener('mouseover', () => {
+            backwardButton.style.backgroundColor = '#212C4D';
+        }
+        );
+
+        // Hover-Effekt hinzufügen
+        backwardButton.addEventListener('mouseout', () => {
+            backwardButton.style.backgroundColor = '#6C72FF';
+        }
+        );
+    }
 
   
   // Funktion zum Abrufen des maximalen calendar_week_year
