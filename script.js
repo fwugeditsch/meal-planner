@@ -45,6 +45,11 @@ function hideSaveButton() {
         const numberOfDays = parseInt(document.getElementById('days').value);
         const seasonalDays = parseInt(document.getElementById('seasonal').value);
 
+        if (seasonalDays > numberOfDays) {
+            alert("Die Anzahl der Tage mit saisonalen Zutaten ist zu groß")
+            return;
+        }
+
         // Überprüfe, ob genügend Gerichte verfügbar sind
         if (!availableDishes || availableDishes.length === 0 || availableDishes.length < numberOfDays) {
             alert('Nicht genügend Gerichte in der Datenbank verfügbar.');
