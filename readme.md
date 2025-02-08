@@ -20,7 +20,7 @@ To start the application in your local network, use the following command:
 ```sh
 node server.js
 ```
-Make sure that you are in the root directory where server.js is located.
+Make sure that you are in the root directory where *[server.js](https://github.com/fwugeditsch-tgm/meal-planner/blob/main/server.js)* is located.
 
 ## Future Enhancements (Planned Features)
 - **User Authentication**: Implement login functionality for personalized meal plans.
