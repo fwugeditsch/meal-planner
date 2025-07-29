@@ -1,0 +1,323 @@
+/* ==============================================
+   SPEZIFISCHE STYLES FÜR ESSENSPLANER
+   ============================================== */
+
+/* Einstellungen Section */
+.settings {
+    text-align: left;
+}
+
+.settings label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.settings select {
+    margin-bottom: 15px;
+}
+
+/* Saisonale Zutaten */
+.ingredients h2 {
+    font-size: 1.2rem;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+.ingredients select {
+    margin-bottom: 20px;
+}
+
+#seasonalIngredients {
+    min-height: 120px;
+}
+
+/* Generate Plan Button */
+#generatePlan {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+/* Mealplan Header */
+.mealplan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #212C4D;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    height: 60px;
+}
+
+.mealplan-header h2 {
+    flex: 1;
+    text-align: center;
+    margin: 0 15px;
+    font-size: 1.1rem;
+}
+
+/* Navigation Buttons */
+#previousMealPlan, #nextMealPlan {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background-color: #6C72FF;
+    border: 1px rgb(56, 56, 56) solid;
+    margin: 0;
+    padding: 0;
+}
+
+#previousMealPlan {
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border-right: none;
+}
+
+#nextMealPlan {
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+    border-left: none;
+}
+
+#previousMealPlan:hover, #nextMealPlan:hover {
+    background-color: #212C4D;
+}
+
+/* Mealplan Table */
+.outer-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.outer-table th, .outer-table td {
+    border: 1px solid rgb(97, 97, 97);
+    padding: 15px;
+    text-align: center;
+}
+
+.outer-table thead th {
+    background-color: #101935;
+    color: white;
+    font-weight: bold;
+    height: 50px;
+}
+
+.outer-table tbody tr:nth-child(odd) {
+    background-color: #101935;
+}
+
+.outer-table tbody tr:nth-child(even) {
+    background-color: #222D4D;
+}
+
+.outer-table tbody td:nth-child(2),
+.outer-table tbody td:nth-child(3) {
+    text-align: left;
+}
+
+/* Table Border Radius */
+.outer-table tr:first-child th:first-child {
+    border-top-left-radius: 10px;
+}
+
+.outer-table tr:first-child th:last-child {
+    border-top-right-radius: 10px;
+}
+
+.outer-table tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+
+.outer-table tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+
+/* Update Buttons in Table */
+.update-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.update-button:hover {
+    background-color: #0056b3;
+}
+
+/* Image in Cell */
+.img-in-cell {
+    max-height: 20px;
+    max-width: 20px;
+    display: block;
+    margin: auto;
+    transition: transform 0.3s ease;
+}
+
+.img-in-cell:hover {
+    transform: scale(1.3);
+}
+
+/* Save Plan Button */
+#savePlan {
+    background-color: #6C72FF;
+    margin-right: 10px;
+}
+
+#savePlan:hover {
+    background-color: #212C4D;
+}
+
+/* View Dishes Button */
+#viewDishes {
+    background-color: #212C4D;
+}
+
+#viewDishes:hover {
+    background-color: #6C72FF;
+}
+
+/* Popup Styles */
+.popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.popup-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #101935;
+    padding: 30px;
+    border: 1px solid #888;
+    width: 400px;
+    max-width: 90vw;
+    text-align: center;
+    border-radius: 15px;
+    border: 1px rgb(56, 56, 56) solid;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    cursor: pointer;
+    color: white;
+}
+
+.close:hover {
+    color: #6C72FF;
+}
+
+#weekPicker {
+    margin-bottom: 20px;
+}
+
+/* Deleted and Not Found Dishes */
+.deleted-dish {
+    opacity: 0.6;
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+    text-decoration: line-through;
+}
+
+.deleted-dish::after {
+    content: " (gelöscht)";
+    color: #dc3545;
+    font-size: 0.8em;
+    font-style: italic;
+}
+
+.not-found-dish {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    opacity: 0.7;
+}
+
+.not-found-dish td {
+    color: #856404;
+}
+
+/* Mealplan Warnings */
+.mealplan-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 10px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.mealplan-warning strong {
+    color: #856404;
+}
+
+.warning-button {
+    background: #e17055;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 5px 5px 0 0;
+    font-size: 0.9em;
+}
+
+.warning-button:hover {
+    background: #d63031;
+}
+
+.warning-button.secondary {
+    background: #636e72;
+}
+
+.warning-button.secondary:hover {
+    background: #2d3436;
+}
+
+/* Status Anzeige */
+.mealplan-status {
+    font-size: 0.9em;
+    margin-top: 10px;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.mealplan-status.healthy {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.mealplan-status.warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.mealplan-status.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}

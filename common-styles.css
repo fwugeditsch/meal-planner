@@ -1,0 +1,208 @@
+/* ==============================================
+   GEMEINSAME STYLES FÜR MEAL PLANNER
+   ============================================== */
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Globale Stile */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #080F25;
+    color: white;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header-Stil - EINHEITLICH FÜR BEIDE SEITEN */
+header {
+    background-color: #101935;
+    color: white;
+    padding: 30px 20px;
+    width: 100%;
+    text-align: center;
+    border-bottom: 2px solid rgb(56, 56, 56);
+}
+
+header h1 {
+    margin: 0;
+    color: white;
+}
+
+header h1 p {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 2.2rem;
+    color: white;
+    margin: 0;
+    font-weight: bold;
+}
+
+/* Container für den Hauptinhalt - ZENTRIERT */
+.page-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+    min-height: calc(100vh - 120px); /* Abzüglich Header-Höhe */
+}
+
+/* Hauptinhalt - EINHEITLICHE GRÖßE UND POSITIONIERUNG */
+main {
+    width: 100%;
+    max-width: 900px;
+    background-color: #101935;
+    color: white;
+    border-radius: 15px;
+    border: 1px rgb(56, 56, 56) solid;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Einheitliche Container für Inhalts-Sektionen */
+.content-section {
+    background-color: #101935;
+    border: 1px rgb(56, 56, 56) solid;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.content-section h2 {
+    color: white;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+}
+
+/* Einheitliche Eingabefelder */
+input[type="text"], 
+input[type="number"], 
+select, 
+textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    background-color: #212C4D;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+input[type="text"]:focus, 
+input[type="number"]:focus, 
+select:focus, 
+textarea:focus {
+    outline: none;
+    border-color: #6C72FF;
+    box-shadow: 0 0 5px rgba(108, 114, 255, 0.3);
+}
+
+input[type="text"]::placeholder,
+textarea::placeholder {
+    color: #999;
+}
+
+/* Einheitliche Buttons */
+button {
+    background-color: #6C72FF;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin: 5px;
+}
+
+button:hover {
+    background-color: #212C4D;
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Sekundäre Buttons */
+button.secondary {
+    background-color: #212C4D;
+}
+
+button.secondary:hover {
+    background-color: #6C72FF;
+}
+
+/* Danger Buttons (Löschen) */
+button.danger {
+    background-color: #ff5757;
+}
+
+button.danger:hover {
+    background-color: #e74c3c;
+}
+
+/* Button Container */
+.button-container {
+    text-align: center;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Labels */
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .page-container {
+        padding: 20px 10px;
+    }
+    
+    main {
+        max-width: 100%;
+        margin: 0;
+        border-radius: 10px;
+    }
+    
+    header h1 p {
+        font-size: 1.8rem;
+    }
+    
+    .content-section {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    header {
+        padding: 20px 15px;
+    }
+    
+    header h1 p {
+        font-size: 1.5rem;
+    }
+    
+    main {
+        padding: 20px;
+    }
+    
+    .content-section {
+        padding: 15px;
+    }
+}

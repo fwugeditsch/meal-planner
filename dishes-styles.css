@@ -1,0 +1,260 @@
+/* ==============================================
+   SPEZIFISCHE STYLES FÜR GERICHTEVERWALTUNG
+   ============================================== */
+
+/* Form für neues Gericht */
+.form {
+    text-align: left;
+    margin-bottom: 30px;
+}
+
+.form h2 {
+    color: white;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+}
+
+#ingredientInputs {
+    margin-bottom: 20px;
+}
+
+#ingredientInputs input {
+    margin-bottom: 10px;
+}
+
+/* Awesomplete Integration */
+.awesomplete.ingredient {
+    width: 100%;
+}
+
+.awesomplete > ul {
+    background: #212C4D;
+    border: 1px solid rgb(56, 56, 56);
+    border-radius: 5px;
+    color: lightgray;
+}
+
+.awesomplete li:hover {
+    background: #6C72FF;
+}
+
+/* Button Styles für Form */
+.editNewDishButtons {
+    background-color: #6C72FF;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-right: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.editNewDishButtons:hover {
+    background-color: #212C4D;
+}
+
+/* Back Button */
+.back-button {
+    background-color: #212C4D;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
+}
+
+.back-button:hover {
+    background-color: #6C72FF;
+}
+
+/* Dishes Section */
+.dishes-section {
+    margin-top: 30px;
+}
+
+.dishes-section h2 {
+    color: white;
+    margin-bottom: 25px;
+    text-align: center;
+    font-size: 1.4rem;
+}
+
+/* Search Field */
+#dishSearch {
+    width: 100%;
+    height: 45px;
+    margin-bottom: 25px;
+    padding: 0 20px;
+    background-color: #212C4D;
+    color: lightgray;
+    border: 1px rgb(56, 56, 56) solid;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+#dishSearch::placeholder {
+    color: #999;
+}
+
+#dishSearch:focus {
+    outline: none;
+    border-color: #6C72FF;
+    box-shadow: 0 0 5px rgba(108, 114, 255, 0.3);
+}
+
+/* Dish List Container */
+.dish-list {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+}
+
+/* Individual Dish Items */
+.dish {
+    border: 1px solid rgb(97, 97, 97);
+    padding: 20px;
+    margin-bottom: 15px;
+    background-color: #212C4D;
+    border-radius: 10px;
+    color: white;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.dish:nth-child(even) {
+    background-color: #222D4D;
+}
+
+.dish:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Dish Content Container */
+.dish-content {
+    flex: 1;
+    margin-bottom: 15px;
+}
+
+.dish h3 {
+    font-size: 1.2rem;
+    margin: 0 0 10px 0;
+    color: white;
+    font-weight: bold;
+    padding-right: 80px; /* Platz für den Button */
+}
+
+.ingredients {
+    font-style: italic;
+    color: #ccc;
+    margin-bottom: 0;
+    line-height: 1.4;
+    font-size: 14px;
+    padding-right: 80px; /* Platz für den Button */
+}
+
+/* Delete Button in Dish */
+.dish button {
+    background-color: #ff5757;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    min-width: 70px;
+}
+
+.dish button:hover {
+    background-color: #e74c3c;
+    transform: translateY(-1px);
+}
+
+/* Empty State */
+.dish-list:empty::after {
+    content: "Keine Gerichte gefunden. Fügen Sie ein neues Gericht hinzu!";
+    display: block;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px;
+    background-color: #212C4D;
+    border-radius: 10px;
+    border: 1px rgb(56, 56, 56) solid;
+}
+
+/* Loading State */
+.loading {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 20px;
+}
+
+/* Error Messages */
+.error-message {
+    background-color: #ff5757;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.success-message {
+    background-color: #6C72FF;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+/* Responsive Adjustments für Dishes */
+@media (max-width: 768px) {
+    .dish {
+        padding: 15px;
+    }
+    
+    .dish h3 {
+        font-size: 1.1rem;
+    }
+    
+    .ingredients {
+        font-size: 13px;
+    }
+    
+    #dishSearch {
+        height: 40px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dish {
+        padding: 12px;
+    }
+    
+    .dish button {
+        position: static;
+        width: 100%;
+        margin-top: 15px;
+        padding: 12px;
+    }
+    
+    .dish h3,
+    .ingredients {
+        padding-right: 0;
+    }
+    
+    .editNewDishButtons {
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+}
