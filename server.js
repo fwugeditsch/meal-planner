@@ -17,19 +17,30 @@ app.use(express.static(__dirname)); // Hier wird das Rootverzeichnis für statis
 
 // Sequelize-Modell für Gerichte (falls du Sequelize verwendest)
 const Dish = sequelize.define('Dish', {
+  id: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
   name: {
     type: Sequelize.STRING
   },
   ingredients: {
     type: Sequelize.STRING
+  },
+  is_deleted: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false
+  },
+  deleted_at: {
+    type: Sequelize.DATE,
+    allowNull: true
   }
 }, {
   timestamps: false, // Deaktiviere die Verwendung von Timestamp-Spalten
-  primaryKey: true, // Setze das id-Feld als Primärschlüssel
-  autoIncrement: true // Lasse das id-Feld automatisch inkrementieren
+  paranoid: false // Wir handhaben Soft Delete manuell
 });
 
-// Sequelize-Modell für Essenspläne (falls du Sequelize verwendest)
 const Mealplan = sequelize.define('MealPlan', {
   // Jahr und Kalenderwoche als Primärschlüssel
   calendar_week_year: { // Week repräsentiert die Kalenderwoche und das Jahr in der Form 202101
@@ -39,14 +50,9 @@ const Mealplan = sequelize.define('MealPlan', {
   dish_names: {
     type: Sequelize.STRING
   }
-
 }, {
-  timestamps: false, // Deaktiviere die Verwendung von Timestamp-Spalten
-  primaryKey: true, // Setze das id-Feld als Primärschlüssel
-  autoIncrement: true // Lasse das id-Feld automatisch inkrementieren
+  timestamps: false // Deaktiviere die Verwendung von Timestamp-Spalten
 });
-
-
 
 // Section für das Modell des Essensplans
 
@@ -56,13 +62,28 @@ app.post('/api/MealPlans', async (req, res) => {
   try {
     const {calendar_week_year, dishes } = req.body;
 
-    // Code zum Abspeichern des Essensplans in der Datenbank
-    await Mealplan.create({
-      calendar_week_year: calendar_week_year, // Kombination aus Jahr und Kalenderwoche
-      dish_names: dishes
+    // Prüfen, ob bereits ein Essensplan für diese Woche existiert
+    const existingMealplan = await Mealplan.findOne({
+      where: {
+        calendar_week_year: calendar_week_year
+      }
     });
 
-    res.status(201).send('Essensplan wurde erfolgreich hinzugefügt.');
+    if (existingMealplan) {
+      // Aktualisiere den bestehenden Essensplan
+      await Mealplan.update(
+        { dish_names: dishes },
+        { where: { calendar_week_year: calendar_week_year } }
+      );
+      res.status(200).send('Essensplan wurde erfolgreich aktualisiert.');
+    } else {
+      // Erstelle einen neuen Essensplan
+      await Mealplan.create({
+        calendar_week_year: calendar_week_year, // Kombination aus Jahr und Kalenderwoche
+        dish_names: dishes
+      });
+      res.status(201).send('Essensplan wurde erfolgreich hinzugefügt.');
+    }
   } catch (error) {
     console.error(error);
     res.status(500).send('Fehler beim Hinzufügen des Essensplans.');
@@ -165,11 +186,13 @@ app.delete('/api/MealPlans/:year/:week', async (req, res) => {
     const year = req.params.year;
     const week = req.params.week;
 
-    // Code zum Löschen des Essensplans aus der Datenbank anhand des Jahres und der Kalenderwoche
+    // calendar_week_year wird als Kombination aus Jahr und Kalenderwoche gebildet, z.B. 202301 für Jahr 2023 und Woche 1
+    const calendar_week_year = parseInt(`${year}${week.toString().padStart(2, '0')}`);
+
+    // Code zum Löschen des Essensplans aus der Datenbank anhand von calendar_week_year
     await Mealplan.destroy({
       where: {
-        year: year,
-        week: week
+        calendar_week_year: calendar_week_year
       }
     });
 
@@ -179,8 +202,6 @@ app.delete('/api/MealPlans/:year/:week', async (req, res) => {
     res.status(500).send('Fehler beim Löschen des Essensplans.');
   }
 });
-
-// API-Endpunkt zum Abrufen einer calendar_week_year im Format YYYYWW für ein gespeichertes Mealplans nach einem Mealplan mit angegebenem calendar_week_year
 // Funktion: Übernimmt ein calendar_week_year und gibt die nächste calendar_week_year zurück, für die ein Mealplan gespeichert ist
 // Sollte nach dem angegebenen calendar_week_year kein Mealplan gespeichert sein, wird null zurückgegeben
 app.get('/api/MealPlans/next/:calendar_week_year', async (req, res) => {
@@ -195,7 +216,8 @@ app.get('/api/MealPlans/next/:calendar_week_year', async (req, res) => {
       },
       order: [
         ['calendar_week_year', 'ASC']
-      ]
+      ],
+      raw: true // Wichtig: Gibt einfaches JSON-Objekt zurück
     });
 
     if (!mealplanNext) {
@@ -204,7 +226,7 @@ app.get('/api/MealPlans/next/:calendar_week_year', async (req, res) => {
       return;
     }
 
-    console.log("Es wurde ein Essensplan gefunden. Datentypprüfung: " + typeof mealplanNext + ". Inhalt: " + mealplanNext);
+    console.log("Es wurde ein Essensplan gefunden. Datentypprüfung: " + typeof mealplanNext + ". Inhalt: " + JSON.stringify(mealplanNext));
     res.status(200).json(mealplanNext.calendar_week_year);
   } catch (error) {
     console.error(error);
@@ -225,7 +247,8 @@ app.get('/api/MealPlans/previous/:calendar_week_year', async (req, res) => {
       },
       order: [
         ['calendar_week_year', 'DESC']
-      ]
+      ],
+      raw: true // Wichtig: Gibt einfaches JSON-Objekt zurück
     });
 
     if (!mealplanPrevious) {
@@ -234,7 +257,7 @@ app.get('/api/MealPlans/previous/:calendar_week_year', async (req, res) => {
       return;
     }
 
-    console.log("Es wurde ein Essensplan gefunden. Datentypprüfung: " + typeof mealplanPrevious + ". Inhalt: " + mealplanPrevious);
+    console.log("Es wurde ein Essensplan gefunden. Datentypprüfung: " + typeof mealplanPrevious + ". Inhalt: " + JSON.stringify(mealplanPrevious));
     res.status(200).json(mealplanPrevious.calendar_week_year);
   } catch (error) {
     console.error(error);
@@ -252,11 +275,19 @@ app.get('/api/MealPlans/previous/:calendar_week_year', async (req, res) => {
 app.post('/api/dishes', async (req, res) => {
   try {
     const { name, ingredients } = req.body;
+    // Prüfe, ob ingredients ein Array ist, ansonsten als String behandeln
+    let ingredientsString;
+    if (Array.isArray(ingredients)) {
+      ingredientsString = ingredients.join(', ');
+    } else if (typeof ingredients === 'string') {
+      ingredientsString = ingredients;
+    } else {
+      ingredientsString = '';
+    }
 
-    // Code zum Hinzufügen des Gerichts in der Datenbank
     await Dish.create({
       name: name,
-      ingredients: ingredients.join(', '), // Falls die Zutaten als Array gespeichert werden
+      ingredients: ingredientsString,
     });
 
     res.status(201).send('Gericht wurde erfolgreich hinzugefügt.');
@@ -265,15 +296,57 @@ app.post('/api/dishes', async (req, res) => {
     res.status(500).send('Fehler beim Hinzufügen des Gerichts.');
   }
 });
-
-// API-Endpunkt zum Abrufen aller gespeicherten Gerichte
+// (Hinweis: Die Funktionalität zum Abrufen aller Gerichte ist jetzt im /api/dishes-Handler mit Query-Parameter enthalten)
+// API-Endpunkt zum Abrufen aller gespeicherten Gerichte (nur aktive)
 app.get('/api/dishes', async (req, res) => {
   try {
-    const dishes = await Dish.findAll(); // Abrufen aller Gerichte aus der Datenbank
-    res.json(dishes); // Senden der Gerichte als JSON-Antwort
+    const includeDeleted = req.query.include_deleted === 'true';
+    
+    const whereClause = includeDeleted ? {} : { is_deleted: false };
+    const dishes = await Dish.findAll({ 
+      where: whereClause,
+      order: [['name', 'ASC']]
+    });
+    
+    res.json(dishes);
   } catch (error) {
     console.error(error);
     res.status(500).send('Fehler beim Abrufen der Gerichte');
+  }
+});
+
+// API-Endpunkt zum Abrufen eines spezifischen Gerichts anhand des Namens (inkl. gelöschte)
+app.get('/api/dishes/:name', async (req, res) => {
+  try {
+    // URL-decode den Gerichtsnamen
+    const dishName = decodeURIComponent(req.params.name);
+    console.log(`Suche nach Gericht: "${dishName}"`);
+    
+    // Suche auch in gelöschten Gerichten für Essensplan-Kompatibilität
+    const dish = await Dish.findOne({
+      where: {
+        name: dishName
+        // Keine is_deleted Filterung hier - wir brauchen auch gelöschte für bestehende Pläne
+      }
+    });
+    
+    if (!dish) {
+      console.log(`Gericht "${dishName}" nicht gefunden.`);
+      res.status(404).json({ message: 'Gericht nicht gefunden.' });
+      return;
+    }
+    
+    // Markiere gelöschte Gerichte in der Antwort
+    const response = {
+      ...dish.toJSON(),
+      is_deleted: dish.is_deleted || false
+    };
+    
+    console.log(`Gericht "${dishName}" gefunden (${dish.is_deleted ? 'gelöscht' : 'aktiv'}).`);
+    res.json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim Abrufen des Gerichts');
   }
 });
 
@@ -281,22 +354,88 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html'); // Passe den Pfad an den Speicherort deiner index.html-Datei an
 });
 
-// API-Endpunkt zum Löschen eines Gerichts anhand seiner ID
+// API-Endpunkt zum "Löschen" eines Gerichts (Soft Delete mit Referenz-Prüfung)
 app.delete('/api/dishes/:id', async (req, res) => {
   try {
     const dishId = req.params.id;
 
-    // Code zum Löschen des Gerichts aus der Datenbank anhand seiner ID
-    await Dish.destroy({
-      where: {
-        id: dishId
-      }
+    // Gericht finden um den Namen zu bekommen
+    const dish = await Dish.findByPk(dishId);
+    if (!dish) {
+      return res.status(404).send('Gericht nicht gefunden.');
+    }
+
+    // Prüfe, ob das Gericht in Essensplänen verwendet wird (nach Name, nicht ID)
+    const allMealPlans = await MealPlan.findAll();
+    const referencingMealPlans = allMealPlans.filter(mealPlan => {
+      const dishNames = mealPlan.dish_names.split(',').map(name => name.trim());
+      return dishNames.includes(dish.name);
     });
+
+    if (referencingMealPlans.length > 0) {
+      const weekYears = referencingMealPlans.map(mp => mp.calendar_week_year).join(', ');
+      return res.status(400).json({ 
+        error: `Das Gericht "${dish.name}" kann nicht gelöscht werden, da es in ${referencingMealPlans.length} Essensplan(en) verwendet wird (Wochen: ${weekYears}). Bitte entfernen Sie es zuerst aus allen Essensplänen.`,
+        affected_mealplans: referencingMealPlans.length,
+        weeks: weekYears
+      });
+    }
+
+    // Soft Delete durchführen
+    const result = await Dish.update(
+      { 
+        is_deleted: true,
+        deleted_at: new Date()
+      },
+      { 
+        where: { id: dishId } 
+      }
+    );
+
+    if (result[0] === 0) {
+      res.status(404).send('Gericht nicht gefunden.');
+      return;
+    }
 
     res.status(200).send('Gericht wurde erfolgreich gelöscht.');
   } catch (error) {
     console.error(error);
     res.status(500).send('Fehler beim Löschen des Gerichts.');
+  }
+});
+
+// Neuer Endpunkt für hartes Löschen (nur für Administratoren)
+app.delete('/api/dishes/:id/hard', async (req, res) => {
+  try {
+    const dishId = req.params.id;
+
+    // Prüfe auf verwendete Essenspläne
+    const mealplansWithDish = await Mealplan.findAll({
+      where: {
+        dish_names: {
+          [Sequelize.Op.like]: `%${dishId}%`
+        }
+      }
+    });
+
+    if (mealplansWithDish.length > 0) {
+      res.status(409).json({
+        error: 'Gericht kann nicht gelöscht werden.',
+        message: `Das Gericht wird noch in ${mealplansWithDish.length} Essensplan(en) verwendet.`,
+        affected_mealplans: mealplansWithDish.map(mp => mp.calendar_week_year)
+      });
+      return;
+    }
+
+    // Hartes Löschen nur wenn keine Referenzen existieren
+    await Dish.destroy({
+      where: { id: dishId }
+    });
+
+    res.status(200).send('Gericht wurde permanent gelöscht.');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Fehler beim permanenten Löschen des Gerichts.');
   }
 });
 
@@ -311,47 +450,16 @@ app.get('/api/ingredients', async (req, res) => {
     dishes.forEach((dish) => {
       const dishIngredients = dish.ingredients.split(',').map((ingredient) => ingredient.trim());
       dishIngredients.forEach((ingredient) => {
-        uniqueIngredients.add(ingredient);
+        if (ingredient) uniqueIngredients.add(ingredient);
       });
     });
 
-    res.json(Array.from(uniqueIngredients));
+    res.status(200).json(Array.from(uniqueIngredients));
   } catch (error) {
     console.error(error);
     res.status(500).send('Fehler beim Abrufen der Zutaten');
   }
 });
-
-// API-Endpunkt zum Abrufen eines Gerichts anhand seines Namens
-app.get('/api/dishes/:name', async (req, res) => {
-  try {
-    const dishName = req.params.name;
-
-    // Code zum Abrufen des Gerichts aus der Datenbank anhand seines Namens
-    const dish = await Dish.findOne({
-      where: {
-        name: dishName
-      }
-    });
-
-    // Falls kein Gericht gefunden wurde, wird 404 zurückgegeben
-    // Falls ein Gericht gefunden wurde, wird dieses als JSON-Antwort zurückgegeben und der Statuscode 200 gesetzt
-    if (dish === null) {
-      res.status(404).json({ message: 'Es wurde kein Gericht gefunden.' });
-      console.log('Es wurde kein Gericht gefunden.');
-      return;
-    }
-
-    res.status(200).json(dish);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Fehler beim Abrufen des Gerichts');
-  }
-});
-
-
-
-// Weitere API-Endpunkte für deine Anwendung...
 
 // Server starten
 sequelize.sync().then(() => {
@@ -361,4 +469,3 @@ sequelize.sync().then(() => {
     console.log(`http://localhost:${port}`);
   });
 });
-

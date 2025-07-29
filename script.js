@@ -4,7 +4,6 @@ let availableDishes = [];
 const currentDate = getCurrentDate();
 var displayedCalendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate));
 var latestMealPlanWeekYear, firstMealPlanWeekYear;
-initializeCalendarWeekYearLimits(); // Initialisieren der globalen Variablen latestMealPlanWeekYear und firstMealPlanWeekYear
 
 // Funktion zum Initialisieren der globalen Variablen
 async function initializeCalendarWeekYearLimits() {
@@ -16,15 +15,45 @@ async function initializeCalendarWeekYearLimits() {
     }
 }
 
+// Funktion zum Initialisieren der Button-Styles (standardmäßig deaktiviert)
+function initializeButtonStyles() {
+    const forwardButton = document.getElementById('nextMealPlan');
+    const backwardButton = document.getElementById('previousMealPlan');
+    
+    // Beide Buttons standardmäßig deaktiviert stylen
+    if (forwardButton) {
+        forwardButton.style.backgroundColor = '#212C4D';
+    }
+    if (backwardButton) {
+        backwardButton.style.backgroundColor = '#212C4D';
+    }
+}
+
+// Funktion zum Initialisieren der Button-Styles (standardmäßig deaktiviert)
 // Hier eine Funktion zum Abrufen aller Gerichte aus der Datenbank
 async function fetchAvailableDishes() {
     try {
-        const response = await fetch('/api/dishes'); // Stelle sicher, dass dies dem tatsächlichen Pfad zu deinem API-Endpunkt entspricht
+        console.log('Lade verfügbare Gerichte...');
+        const response = await fetch('/api/dishes');
         const data = await response.json();
-        availableDishes = data; // Speichere die Gerichte im availableDishes-Array
+        availableDishes = data;
+        
+        // Cache für getMealPlanForWeek invalidieren
+        window.allDishes = data;
+        
+        console.log(`${availableDishes.length} Gerichte geladen:`, availableDishes.map(d => d.name));
     } catch (error) {
         console.error('Fehler beim Abrufen der Gerichte aus der Datenbank:', error);
+        availableDishes = [];
+        window.allDishes = [];
     }
+}
+
+// Funktion zum Invalidieren des Gerichte-Cache (bei Änderungen aufrufen)
+function invalidateDishCache() {
+    console.log('Gerichte-Cache invalidiert');
+    window.allDishes = null;
+    fetchAvailableDishes(); // Neu laden
 }
 
 // Funktion zum Verstecken der Schaltfläche zum Speichern des Essensplans
@@ -44,19 +73,19 @@ function hideSaveButton() {
     function generateMealPlan() {
         const numberOfDays = parseInt(document.getElementById('days').value);
         const seasonalDays = parseInt(document.getElementById('seasonal').value);
-
+    
         if (seasonalDays > numberOfDays) {
             alert("Die Anzahl der Tage mit saisonalen Zutaten ist zu groß")
             return;
         }
-
+    
         // Überprüfe, ob genügend Gerichte verfügbar sind
         if (!availableDishes || availableDishes.length === 0 || availableDishes.length < numberOfDays) {
             alert('Nicht genügend Gerichte in der Datenbank verfügbar.');
             hideSaveButton();
             return;
         }
-
+    
         // Sammle alle saisonalen Zutaten aus dem Dropdown-Menü
         const selectedSeasonalIngredients = new Set();
         const seasonalIngredientsDropdown = document.getElementById('seasonalIngredients');
@@ -65,37 +94,37 @@ function hideSaveButton() {
                 selectedSeasonalIngredients.add(option.value);
             }
         }
-
+    
         // Überprüfe, ob saisonale Zutaten ausgewählt wurden
         if (selectedSeasonalIngredients.size === 0 && seasonalDays > 0) {
             alert('Bitte wähle saisonale Zutaten aus.');
             return;
         }
-
+    
         // Erzeuge eine Liste von Gerichten, die die saisonalen Zutaten enthalten
         const seasonalDishes = selectDishesWithSeasonalIngredients(availableDishes, selectedSeasonalIngredients, seasonalDays);
-
+    
         // Überprüfe, ob genügend saisonale Gerichte verfügbar sind
         if (seasonalDays > 0 && (!seasonalDishes || seasonalDishes.length < seasonalDays)) {
             alert('Nicht genügend verschiedene Gerichte mit den ausgewählten saisonalen Zutaten verfügbar.');
             hideSaveButton();
             return;
         }
-
+    
         const mealPlan = [];
-
+    
         // Kopiere die verfügbaren Gerichte in ein neues Array
         const remainingDishes = [...availableDishes];
-
+    
         // Mische das Array, um die Reihenfolge der Gerichte zufällig zu machen
         shuffleArray(remainingDishes);
-
+    
         // Mische die saisonalen Gerichte
         shuffleArray(seasonalDishes);
-
+    
         // Füge die saisonalen Gerichte zum Essensplan hinzu
         mealPlan.push(...seasonalDishes);
-
+    
         // Entferne die saisonalen Gerichte aus den verbleibenden Gerichten
         seasonalDishes.forEach((dish) => {
             const index = remainingDishes.findIndex((remainingDish) => remainingDish.id === dish.id);
@@ -103,10 +132,10 @@ function hideSaveButton() {
                 remainingDishes.splice(index, 1);
             }
         });
-
+    
         // Mische die restlichen Gerichte
         shuffleArray(remainingDishes);
-
+    
         // Generiere den restlichen Teil des Essensplans
         for (let i = seasonalDays; i < numberOfDays; i++) {
             if (remainingDishes.length === 0) {
@@ -114,27 +143,27 @@ function hideSaveButton() {
                 hideSaveButton();
                 return;
             }
-
+    
             // Wähle ein zufälliges Gericht aus dem verbleibenden Array aus
             const selectedDish = remainingDishes.pop();
             mealPlan.push(selectedDish);
         }
-
+    
         // Überprüfen, ob ein gültiger Essensplan erstellt wurde
         if (mealPlan.length === numberOfDays) {
             showSaveButton();
-
+    
             // Zeige die Tabelle an, nachdem der Essensplan generiert wurde
             const mealPlanTable = document.getElementById('mealPlanTable');
             mealPlanTable.style.display = 'table'; // Ändere den Anzeigestil auf 'table'
-                } else {
+        } else {
             // Falls nicht genügend Gerichte vorhanden sind, verstecke die Speichern-Schaltfläche
             hideSaveButton();
         }
-
+    
         // Gerichte innerhalb des Essensplans mischen
         shuffleArray(mealPlan);
-
+    
         // Aufbau von meaPlan:
         // mealPlan = [
         //     {
@@ -149,8 +178,8 @@ function hideSaveButton() {
         //     },
         //     ...
         // ]
-
-
+    
+    
         // Anzeigen des Essensplans in der Tabelle
         displayMealPlan(mealPlan);
         // class mealplan-header wird ausgeblendt
@@ -158,7 +187,7 @@ function hideSaveButton() {
         document.querySelectorAll('.mealplan-header').forEach((element) => {
             element.style.visibility = 'hidden';
         });
-
+    
     }
 
         function selectDishesWithSeasonalIngredients(availableDishes, selectedSeasonalIngredients, numberOfDays) {
@@ -170,15 +199,15 @@ function hideSaveButton() {
                 const ingredientsArray = dish.ingredients.split(', ');
                 return ingredientsArray.some((ingredient) => selectedSeasonalIngredients.has(ingredient));
             });
-
+        
             // Überprüfe, ob genügend Gerichte für die Anforderung vorhanden sind
             if (dishesWithSeasonalIngredients.length < numberOfDays) {
                 return null; // Nicht genügend Gerichte vorhanden
             }
-
+        
             // Mische das Array, um die Reihenfolge der Gerichte zufällig zu machen
             shuffleArray(dishesWithSeasonalIngredients);
-
+        
             // Wähle die ersten "numberOfDays" Gerichte aus dem gemischten Array aus
             return dishesWithSeasonalIngredients.slice(0, numberOfDays);
         }
@@ -189,15 +218,15 @@ function hideSaveButton() {
             // der Parameter mealPlan ist ein Array mit den Gerichten
             const mealPlanTable = document.getElementById('mealPlanTable');
             mealPlanTable.innerHTML = ''; // Lösche alle Zeilen aus der Tabelle
-
+        
             console.log("Datentyp von mealPlan:", typeof mealPlan);
             console.log("Inhalt von mealPlan:", mealPlan);
-
+        
             // Datentyp von mealPlan zum debuggen
             console.log('Datentyp von mealPlan: ' + typeof mealPlan);
             // Inhalte von mealPlan zum debuggen
             console.log('Inhalt von mealPlan: ' + mealPlan);
-
+        
             // Erstelle eine neue Zeile für jedes Gericht im Essensplan
             mealPlan.forEach((dish, index) => {
                 // Erstelle eine Überschriftszeile, falls es die erste Zeile ist
@@ -223,24 +252,38 @@ function hideSaveButton() {
                 numberCell.style.fontWeight = 'bold';
                 nameCell.textContent = dish.name;
                 ingredientsCell.textContent = dish.ingredients;
+                
+                // Spezielle Behandlung für nicht gefundene Gerichte
+                if (dish._status === 'not_found') {
+                    row.classList.add('not-found-dish');
+                    nameCell.innerHTML = `${dish.name} <span style="color: #dc3545; font-size: 0.8em;">(nicht gefunden)</span>`;
+                    ingredientsCell.style.fontStyle = 'italic';
+                    ingredientsCell.style.color = '#6c757d';
+                }
+                
                 // bild von refreshButton (img/refresh_button.png) als Schaltfläche zum Ändern des Gerichts
                 
                 // Erstellen Sie das img-Element für das Aktualisieren-Bild
                 const updateImage = document.createElement('img');
-                updateImage.src = 'img/refresh_button.png'; // Hier sollte der Pfad zu Ihrem Bild sein
+                updateImage.src = 'img/refresh_button.png';
                 updateImage.alt = 'Aktualisieren';
-
+        
                 // Weisen Sie die CSS-Klasse "img-in-cell" zu
                 updateImage.classList.add('img-in-cell');
-
+        
                 // Fügen Sie das Bild der updateCell hinzu
                 updateCell.appendChild(updateImage);
-
-                // Fügen Sie das onClick-Ereignis hinzu
-                updateImage.addEventListener('click', () => {
-                    updateDish(index);
+        
+                // Fügen Sie das onClick-Ereignis hinzu (nur für verfügbare Gerichte)
+                if (dish._status === 'active') {
+                    updateImage.addEventListener('click', () => {
+                        updateDish(index);
+                    });
+                } else {
+                    updateImage.style.opacity = '0.3';
+                    updateImage.style.cursor = 'not-allowed';
+                    updateImage.title = 'Gericht nicht verfügbar - kann nicht geändert werden';
                 }
-                );
             });
             
         }
@@ -248,25 +291,29 @@ function hideSaveButton() {
         
         function updateDish(index) {
             const mealPlan = getMealPlan(); // Hole den aktuellen Essensplan
-
-            // Überprüfe, ob genügend Gerichte verfügbar sind
-            if (availableDishes.length === 0) {
-                alert('Nicht genügend Gerichte in der Datenbank verfügbar.');
+            // Wähle ein zufälliges neues Gericht aus den verfügbaren Gerichten aus und stelle sicher, dass es nicht bereits im Essensplan enthalten ist
+            // weiters wird geprüft, ob es überhaupt noch ein verfügbares Gericht gibt, das nicht im Essensplan enthalten ist. Es soll auch kein Gericht mehrmals im Essensplan enthalten sein.
+        
+            const remainingDishes = availableDishes.filter(dish => !mealPlan.some(meal => meal.name === dish.name));
+            if (remainingDishes.length === 0) {
+                alert('Es gibt keine verfügbaren Gerichte mehr, die nicht im Essensplan enthalten sind.');
                 return;
             }
-
-            // Wähle ein zufälliges neues Gericht aus den verfügbaren Gerichten aus
-            let newDish;
-            do {
-                const randomIndex = Math.floor(Math.random() * availableDishes.length);
-                newDish = availableDishes[randomIndex];
-            } while (mealPlan.some(dish => dish.name === newDish.name));
-
-            // Ersetze das Gericht im Essensplan an der angegebenen Position (index)
-            mealPlan[index] = newDish;
-
-            // Aktualisiere die Anzeige des Essensplans
+            // Wähle ein zufälliges Gericht aus den verbleibenden Gerichten
+            const randomIndex = Math.floor(Math.random() * remainingDishes.length);
+            const newDish = remainingDishes[randomIndex];
+        
+            // Aktualisiere das Gericht im Essensplan
+            mealPlan[index] = {
+                name: newDish.name,
+                ingredients: newDish.ingredients,
+            };
+        
+            // Aktualisiere die Tabelle mit dem neuen Essensplan
             displayMealPlan(mealPlan);
+            
+            // Zeige die Schaltfläche zum Speichern des Essensplans an
+            showSaveButton();
         }
 
         // Funktion zum Holen des aktuellen Essensplans aus der Tabelle
@@ -274,20 +321,20 @@ function hideSaveButton() {
             const mealPlanTable = document.getElementById('mealPlanTable');
             const mealPlanRows = mealPlanTable.rows;
             const mealPlan = [];
-
+        
             for (let i = 1; i < mealPlanRows.length; i++) { // Starte bei 1, um die Überschriftenzeile zu überspringen
                 const row = mealPlanRows[i];
                 const nameCell = row.cells[1];
                 const ingredientsCell = row.cells[2];
-
+        
                 const dish = {
                     name: nameCell.textContent,
                     ingredients: ingredientsCell.textContent,
                 };
-
+        
                 mealPlan.push(dish);
             }
-
+        
             return mealPlan;
         }
             
@@ -308,24 +355,24 @@ function hideSaveButton() {
         async function fillSeasonalIngredientsDropdown() {
             const dropdown = document.getElementById('seasonalIngredients');
             dropdown.appendChild(document.createElement('option'));
-
+        
             // API-Aufruf, um alle unterschiedlichen Zutaten abzurufen
             try {
                 const response = await fetch('/api/ingredients');
                 let ingredients = await response.json();
-
+        
                 // Alphabetische Sortierung der Zutaten in aufsteigender Reihenfolge
                 ingredients = ingredients.sort((a, b) => a.localeCompare(b));
-
+        
                 // Löschen Sie alle vorhandenen Optionen im Dropdown-Menü
                 dropdown.innerHTML = '';
-
+        
                 // Füllen Sie das Dropdown-Menü mit den alphabetisch sortierten Zutaten
                 ingredients.forEach((ingredient) => {
-                const option = document.createElement('option');
-                option.value = ingredient;
-                option.textContent = ingredient;
-                dropdown.appendChild(option);
+                    const option = document.createElement('option');
+                    option.value = ingredient;
+                    option.textContent = ingredient;
+                    dropdown.appendChild(option);
                 });
             } catch (error) {
                 console.error('Fehler beim Abrufen der Zutaten:', error);
@@ -338,7 +385,7 @@ function hideSaveButton() {
             const selectedIngredients = [];
             for (let i = 0; i < dropdown.options.length; i++) {
                 if (dropdown.options[i].selected) {
-                selectedIngredients.push(dropdown.options[i].value);
+                    selectedIngredients.push(dropdown.options[i].value);
                 }
             }
             // Hier haben Sie die ausgewählten Zutaten im Array selectedIngredients
@@ -352,7 +399,7 @@ function hideSaveButton() {
 
         // Funktion zum Hinzufügen eines neuen Zutaten-Textfelds
         function addIngredientField() {
-
+        
             // Wenn es bereits ein leerer Eingabefeld gibt, passiert nichts
             const ingredientInputs1 = document.querySelectorAll('.ingredient');
             let emptyInputFound = false;
@@ -365,7 +412,7 @@ function hideSaveButton() {
             if (emptyInputFound) {
                 return;
             }
-
+        
             const ingredientInputs = document.getElementById('ingredientInputs');
             const newIngredientInput = document.createElement('input');
             newIngredientInput.type = 'text';
@@ -378,14 +425,14 @@ function hideSaveButton() {
             // der Rand des neuen Zutatenfeld soll 1px rgb(56, 56, 56) solid sein
             newIngredientInput.style.border = '1px rgb(56, 56, 56) solid';
             newIngredientInput.style.color = 'lightgrey';
-
+        
             // Fügen Sie das neue Zutatenfeld dem Awesomplete-Plugin hinzu
             const awesomplete = new Awesomplete(newIngredientInput, {
                 list: [],
                 minChars: 2,
             });
             loadIngredientsIntoAutocomplete();
-
+        
         }
 
         function resetIngredientFields() {
@@ -396,7 +443,7 @@ function hideSaveButton() {
                     input.remove();
             }
             );
-
+        
             // der Inhalt des ersten Zutatenfelds wird geleert
             ingredientInputs[0].value = '';
         }
@@ -408,7 +455,7 @@ function hideSaveButton() {
             const dishName = dishNameInput.value.trim(); // Name des Gerichts
             const ingredientInputs = document.querySelectorAll('.ingredient');
             const ingredients = [];
-
+        
             // Filtere leere Zutatenfelder heraus und trime Whitespaces
             ingredientInputs.forEach(input => {
                 const ingredientValue = input.value.trim();
@@ -416,12 +463,12 @@ function hideSaveButton() {
                     ingredients.push(ingredientValue);
                 }
             });
-
+        
             if (dishName === '' || ingredients.length === 0) {
                 alert('Bitte fülle alle Felder aus.');
                 return;
             }
-
+        
             // wenn es bereits ein Gericht mit dem gleichen Namen gibt, wird eine Fehlermeldung ausgegeben
             const dishesList = document.getElementById('dishesList');
             const dishes = dishesList.querySelectorAll('.dish');
@@ -432,14 +479,14 @@ function hideSaveButton() {
                     alert('Es gibt bereits ein Gericht mit diesem Namen.');
                     continueQuery = false;
                     // FUnktion beenedet, wenn es bereits ein Gericht mit dem gleichen Namen gibt
-
+        
                 }
             });
-
+        
             if (continueQuery === false) {
                 return;
             }
-
+        
             fetch('/api/dishes', {
                 method: 'POST',
                 headers: {
@@ -464,9 +511,9 @@ function hideSaveButton() {
                 } else {
                     throw new Error('Fehler beim Hinzufügen des Gerichts.');
                 }
-
+        
                 resetIngredientFields(); // Setze die Zutatenfelder zurück
-
+        
                 
             })
             .catch(error => {
@@ -490,10 +537,10 @@ function hideSaveButton() {
                 const dishesList = document.getElementById('dishesList');
                 dishesList.innerHTML = ''; // Leere die bestehende Liste
 
-                data.forEach(dish => {
-                    // alle Gerichte werden alphabetisch sortiert
-                    data = data.sort((a, b) => a.name.localeCompare(b.name));
+                // alle Gerichte werden alphabetisch sortiert
+                const sortedDishes = data.sort((a, b) => a.name.localeCompare(b.name));
 
+                sortedDishes.forEach(dish => {
                     const dishDiv = document.createElement('div');
                     dishDiv.className = 'dish';
                     const dishName = document.createElement('h3');
@@ -584,9 +631,10 @@ function hideSaveButton() {
             
             console.log('calendar_week_year: ' + calendar_week_year);
 
-            // wenn die Kalenderwoche bereits in der Datenbank vorhanden ist, soll eine Fehlermeldung ausgegeben werden und der Essensplan nicht gespeichert werden.
+            // wenn die Kalenderwoche bereits in der Datenbank vorhanden ist, soll der Benutzer gefragt werden, ob er den bestehenden Essensplan überschreiben möchte
             // Deklaration und Initialisierung von mealplan zu Beginn der Funktion
             let mealplan;
+            let existingMealPlan = false;
 
             try {
                 // Überprüfe, ob der Essensplan bereits in der Datenbank vorhanden ist
@@ -594,12 +642,11 @@ function hideSaveButton() {
                 // Statuscode der Antwort auswerten
                 if (response.status === 200) {
                     // wenn die Antwort den Statuscode 200 hat, ist der Essensplan bereits vorhanden
-                    alert('Fehler beim Speichern des Essensplans. Der Essensplan ist bereits vorhanden.');
-                    // Leere das Eingabefeld
-                    weekPicker.textContent = '';
-                    // Probiere alle Möglichkeiten, den Wert des Eingabefeldes zu leeren
-
-                    return;
+                    existingMealPlan = true;
+                    const confirmOverwrite = confirm('Ein Essensplan für diese Woche existiert bereits. Möchten Sie ihn überschreiben?');
+                    if (!confirmOverwrite) {
+                        return; // Benutzer möchte nicht überschreiben
+                    }
                 }
             } catch (error) {
                 console.error(error);
@@ -775,7 +822,6 @@ function hideSaveButton() {
 
             if (dd < 10)
                 dd = '0' + dd;
-            // Add leading zero if the month is less than 10
             if (mm < 10)
                 mm = '0' + mm;
 
@@ -874,12 +920,16 @@ function hideSaveButton() {
         // Parameter: calendar_week_year
         // Rückgabe: calendar_week_year
         async function getLastMealPlanWeek(calendar_week_year) {
+            console.log('getLastMealPlanWeek aufgerufen mit:', calendar_week_year);
+            
             if (calendar_week_year === null) {
                 console.log('getLastMealPlanWeek: calendar_week_year ist null.');
                 return null;
             }
             try {
               const response = await fetch(`/api/MealPlans/previous/${calendar_week_year}`);
+              console.log('API Response Status:', response.status);
+              
               if (response.status === 200) {
                 const mealplanWeek = await response.json();
                 console.log("Letzter Essensplan vor " + calendar_week_year + ": " + mealplanWeek);
@@ -891,9 +941,15 @@ function hideSaveButton() {
                   console.log('getLastMealPlanWeek: Kein letzter Mealplan vorhanden.');
                   return null;
                 }
+              } else if (response.status === 404) {
+                console.log('getLastMealPlanWeek: 404 - Kein vorheriger Mealplan gefunden.');
+                return null;
+              } else {
+                console.log('getLastMealPlanWeek: Unerwarteter Status Code:', response.status);
+                return null;
               }
             } catch (error) {
-              console.error(error);
+              console.error('Fehler in getLastMealPlanWeek:', error);
               return null;
             }
           }
@@ -904,40 +960,63 @@ function hideSaveButton() {
         // Parameter: calendar_week_year
         // Rückgabe: Array mit Gerichten
         async function getMealPlanForWeek(calendar_week_year) {
-            console.log('calendar_week_year: ' + calendar_week_year);
-            let mealplan;
-            var dish_names_array = [];
-            var dishes = [];
-
+            console.log('getMealPlanForWeek aufgerufen für:', calendar_week_year);
+            
             try {
-                const response = await fetch(`/api/MealPlans/${calendar_week_year}`);
-                if (response.status === 200) {
-                    mealplan = await response.json();
-                    const dish_names = mealplan.dish_names;
-                    dish_names_array = dish_names.split(', ');
-                    console.log('dish_names_array: ' + dish_names_array);
+                // 1. Mealplan-Daten abrufen
+                const mealplanResponse = await fetch(`/api/MealPlans/${calendar_week_year}`);
+                if (mealplanResponse.status !== 200) {
+                    console.log(`Kein Mealplan für ${calendar_week_year} gefunden.`);
+                    return [];
                 }
-            } catch (error) {
-                console.error(error);
-                alert('Fehler beim Abrufen des Essensplans oder beim Abfragen der Datenbank. Fehlercode: ' + error.status);
-            }
 
-            try {
-                for (let i = 0; i < dish_names_array.length; i++) {
-                    const response = await fetch(`/api/dishes/${dish_names_array[i]}`);
-                    const dish = await response.json();
-                    // console.log('Datentyp von dish: ' + typeof dish);
-                    // console.log('Name von Dish: ' + dish.name);
-                    // console.log('Zutaten von Dish: ' + dish.ingredients);
-                    dishes.push(dish);
+                const mealplan = await mealplanResponse.json();
+                const dishNames = mealplan.dish_names.split(',').map(name => name.trim());
+                console.log('Gespeicherte Gerichtsnamen:', dishNames);
+
+                // 2. Alle verfügbaren Gerichte abrufen (nur aktive)
+                if (!window.allDishes) {
+                    console.log('Lade alle aktiven Gerichte...');
+                    const dishesResponse = await fetch('/api/dishes');
+                    if (dishesResponse.ok) {
+                        window.allDishes = await dishesResponse.json();
+                        console.log('Alle aktiven Gerichte geladen:', window.allDishes.length);
+                    } else {
+                        console.error('Fehler beim Laden der Gerichte');
+                        return [];
+                    }
                 }
-            } catch (error) {
-                console.error(error);
-                alert('Fehler beim Abrufen der Gerichte oder beim Abfragen der Datenbank. Fehlercode: ' + error.status);
-            }
 
-            return dishes;
+                // 3. Gerichte zusammenstellen - fehlende als "nicht gefunden" markieren
+                const mealPlanDishes = dishNames.map(dishName => {
+                    const dish = window.allDishes.find(d => d.name === dishName);
+                    if (dish) {
+                        console.log(`✓ Gericht gefunden: ${dishName}`);
+                        return { ...dish, _status: 'active' };
+                    } else {
+                        console.warn(`⚠ Gericht nicht gefunden: ${dishName}`);
+                        return {
+                            id: null,
+                            name: dishName,
+                            ingredients: 'nicht verfügbar',
+                            category: 'nicht verfügbar',
+                            seasonality: 'nicht verfügbar',
+                            preparation_time: 'nicht verfügbar',
+                            _status: 'not_found'
+                        };
+                    }
+                });
+
+                console.log(`Mealplan geladen: ${mealPlanDishes.length} Gerichte (${mealPlanDishes.filter(d => d._status === 'active').length} verfügbar, ${mealPlanDishes.filter(d => d._status === 'not_found').length} nicht gefunden)`);
+                return mealPlanDishes;
+
+            } catch (error) {
+                console.error('Fehler in getMealPlanForWeek:', error);
+                return [];
+            }
         }
+
+
 
         // Funktion zum Ermitteln des nächsten Mealplans
 // Parameter: calendar_week_year
@@ -998,102 +1077,70 @@ async function getNextMealPlan(calendar_week_year) {
     const forwardButton = document.getElementById('nextMealPlan');
     const backwardButton = document.getElementById('previousMealPlan');
 
+    // Wenn keine Meal Plan Grenzen verfügbar sind (z.B. keine Meal Plans existieren), beide Buttons deaktivieren
+    if (latestMealPlanWeekYear === undefined || firstMealPlanWeekYear === undefined) {
+        console.log('Keine Meal Plan Grenzen verfügbar - beide Buttons deaktivieren');
+        disableForwardButton();
+        disableBackwardButton();
+        return;
+    }
+
     // Überprüfen, ob der nächste Mealplan existiert
     const hasNextMealPlan = displayedCalendarWeekYear < latestMealPlanWeekYear;
     // Überprüfen, ob der vorherige Mealplan existiert
     const hasPreviousMealPlan = displayedCalendarWeekYear > firstMealPlanWeekYear;
 
-    if(!hasNextMealPlan)
-        disableForwardButton();
-    else
+    // Buttons entsprechend aktivieren/deaktivieren
+    if (hasNextMealPlan) {
         enableForwardButton();
+    } else {
+        disableForwardButton();
+    }
 
-    if(!hasPreviousMealPlan)
-        disableBackwardButton();
-    else
+    if (hasPreviousMealPlan) {
         enableBackwardButton();
+    } else {
+        disableBackwardButton();
+    }
 
+    console.log(`Button-Status - Forward: ${hasNextMealPlan ? 'enabled' : 'disabled'}, Backward: ${hasPreviousMealPlan ? 'enabled' : 'disabled'}`);
   }
 
   function disableForwardButton() {
     const forwardButton = document.getElementById('nextMealPlan');
     forwardButton.setAttribute('disabled', '');
-
-    // Farbe zu #212C4D ändern und Hover-Effekt entfernen
     forwardButton.style.backgroundColor = '#212C4D';
 
-    // Hover-Effekt entfernen
-    forwardButton.addEventListener('mouseover', () => {
-        forwardButton.style.backgroundColor = '#212C4D';
-    }
-    );
-
-    // Hover-Effekt entfernen
-    forwardButton.addEventListener('mouseout', () => {
-        forwardButton.style.backgroundColor = '#212C4D';
-    }
-    );
-
+    // Event Listeners entfernen und neu setzen um mehrfache Registrierung zu vermeiden
+    forwardButton.onmouseover = () => forwardButton.style.backgroundColor = '#212C4D';
+    forwardButton.onmouseout = () => forwardButton.style.backgroundColor = '#212C4D';
   }
 
     function enableForwardButton() {
         const forwardButton = document.getElementById('nextMealPlan');
         forwardButton.removeAttribute('disabled');
-
-        // Farbe zu #6C72FF ändern und Hover-Effekt mit Farbe #212C4D hinzufügen
         forwardButton.style.backgroundColor = '#6C72FF';
 
-        // Hover-Effekt hinzufügen
-        forwardButton.addEventListener('mouseover', () => {
-            forwardButton.style.backgroundColor = '#212C4D';
-        }
-        );
-
-        // Hover-Effekt hinzufügen
-        forwardButton.addEventListener('mouseout', () => {
-            forwardButton.style.backgroundColor = '#6C72FF';
-        }
-        );
+        forwardButton.onmouseover = () => forwardButton.style.backgroundColor = '#212C4D';
+        forwardButton.onmouseout = () => forwardButton.style.backgroundColor = '#6C72FF';
     }
 
     function disableBackwardButton() {
         const backwardButton = document.getElementById('previousMealPlan');
         backwardButton.setAttribute('disabled', '');
-
-        // Farbe zu #212C4D ändern und Hover-Effekt entfernen
         backwardButton.style.backgroundColor = '#212C4D';
 
-        // Hover-Effekt entfernen
-        backwardButton.addEventListener('mouseover', () => {
-            backwardButton.style.backgroundColor = '#212C4D';
-        }
-        );
-
-        // Hover-Effekt entfernen
-        backwardButton.addEventListener('mouseout', () => {
-            backwardButton.style.backgroundColor = '#212C4D';
-        }
-        );
+        backwardButton.onmouseover = () => backwardButton.style.backgroundColor = '#212C4D';
+        backwardButton.onmouseout = () => backwardButton.style.backgroundColor = '#212C4D';
     }
 
     function enableBackwardButton() {
         const backwardButton = document.getElementById('previousMealPlan');
         backwardButton.removeAttribute('disabled');
-
-        // Farbe zu #6C72FF ändern und Hover-Effekt mit Farbe #212C4D hinzufügen
         backwardButton.style.backgroundColor = '#6C72FF';
 
-        // Hover-Effekt hinzufügen
-        backwardButton.addEventListener('mouseover', () => {
-            backwardButton.style.backgroundColor = '#212C4D';
-        }
-        );
-
-        // Hover-Effekt hinzufügen
-        backwardButton.addEventListener('mouseout', () => {
-            backwardButton.style.backgroundColor = '#6C72FF';
-        }
-        );
+        backwardButton.onmouseover = () => backwardButton.style.backgroundColor = '#212C4D';
+        backwardButton.onmouseout = () => backwardButton.style.backgroundColor = '#6C72FF';
     }
 
   
@@ -1162,58 +1209,106 @@ async function getAndDisplayNextMealPlan() {
   }
   
   async function handleForwardButtonClick() {
+    console.log('=== FORWARD NAVIGATION START ===');
+    console.log('Aktuell angezeigte Woche:', displayedCalendarWeekYear);
+    
     try {
-        if (displayedCalendarWeekYear !== undefined) {
-            const nextMealPlanWeek = await getNextMealPlanWeek(displayedCalendarWeekYear);
-            if (nextMealPlanWeek !== null) {
-                const nextMealPlan = await getMealPlanForWeek(nextMealPlanWeek);
-                if (nextMealPlan.length > 0) {
-                    displayMealPlan(nextMealPlan);
-                    setNewDate(nextMealPlanWeek);
-                    displayedCalendarWeekYear = nextMealPlanWeek;
-                } else {
-                    console.log('Kein nächster Mealplan vorhanden.');
-                }
-            } else {
-                console.log('Kein nächster Mealplan vorhanden.');
-            }
-        } else {
-            console.log('displayedCalendarWeekYear ist undefined. Warte auf Initialisierung.');
+        if (!displayedCalendarWeekYear) {
+            console.warn('displayedCalendarWeekYear ist nicht gesetzt');
+            return;
         }
+
+        // 1. Nächste Woche finden
+        const nextWeek = await getNextMealPlanWeek(displayedCalendarWeekYear);
+        console.log('Nächste Woche gefunden:', nextWeek);
+        
+        if (!nextWeek) {
+            console.log('Keine nächste Woche verfügbar - Button sollte deaktiviert sein');
+            disableForwardButton();
+            return;
+        }
+
+        // 2. Mealplan für nächste Woche laden
+        const nextMealPlan = await getMealPlanForWeek(nextWeek);
+        console.log('Nächster Mealplan geladen:', nextMealPlan.length, 'Gerichte');
+        
+        if (nextMealPlan.length === 0) {
+            console.warn('Nächster Mealplan ist leer oder fehlerhaft');
+            showUserMessage('Fehler: Der nächste Essensplan konnte nicht vollständig geladen werden.');
+            return;
+        }
+
+        // 3. UI aktualisieren
+        displayedCalendarWeekYear = nextWeek;
+        displayMealPlan(nextMealPlan);
+        await setNewDate(nextWeek);
+        
+        console.log('Navigation erfolgreich. Neue Woche:', displayedCalendarWeekYear);
+        
     } catch (error) {
-        console.error('Fehler beim Vorwärts-Button:', error);
+        console.error('Fehler bei Vorwärts-Navigation:', error);
+        showUserMessage('Fehler beim Laden des nächsten Essensplans.');
     } finally {
-        // Aktualisiere die Buttons, unabhängig davon, ob ein Fehler auftritt oder nicht
+        // 4. Button-Zustände aktualisieren
         updateButtons();
+        console.log('=== FORWARD NAVIGATION END ===');
     }
 }
 
 // Funktion zum Behandeln des Rückwärts-Buttons
 async function handleBackwardButtonClick() {
+    console.log('=== BACKWARD NAVIGATION START ===');
+    console.log('Aktuell angezeigte Woche:', displayedCalendarWeekYear);
+    
     try {
-        if (displayedCalendarWeekYear !== undefined) {
-            const lastMealPlanWeek = await getLastMealPlanWeek(displayedCalendarWeekYear);
-            if (lastMealPlanWeek !== null) {
-                const lastMealPlan = await getMealPlanForWeek(lastMealPlanWeek);
-                if (lastMealPlan.length > 0) {
-                    displayMealPlan(lastMealPlan);
-                    setNewDate(lastMealPlanWeek);
-                    displayedCalendarWeekYear = lastMealPlanWeek;
-                } else {
-                    console.log('Kein letzter Mealplan vorhanden.');
-                }
-            } else {
-                console.log('Kein letzter Mealplan vorhanden.');
-            }
-        } else {
-            console.log('displayedCalendarWeekYear ist undefined. Warte auf Initialisierung.');
+        if (!displayedCalendarWeekYear) {
+            console.warn('displayedCalendarWeekYear ist nicht gesetzt');
+            return;
         }
+
+        // 1. Vorherige Woche finden
+        const previousWeek = await getLastMealPlanWeek(displayedCalendarWeekYear);
+        console.log('Vorherige Woche gefunden:', previousWeek);
+        
+        if (!previousWeek) {
+            console.log('Keine vorherige Woche verfügbar - Button sollte deaktiviert sein');
+            disableBackwardButton();
+            return;
+        }
+
+        // 2. Mealplan für vorherige Woche laden
+        const previousMealPlan = await getMealPlanForWeek(previousWeek);
+        console.log('Vorheriger Mealplan geladen:', previousMealPlan.length, 'Gerichte');
+        
+        if (previousMealPlan.length === 0) {
+            console.warn('Vorheriger Mealplan ist leer oder fehlerhaft');
+            showUserMessage('Fehler: Der vorherige Essensplan konnte nicht vollständig geladen werden.');
+            return;
+        }
+
+        // 3. UI aktualisieren
+        displayedCalendarWeekYear = previousWeek;
+        displayMealPlan(previousMealPlan);
+        await setNewDate(previousWeek);
+        
+        console.log('Navigation erfolgreich. Neue Woche:', displayedCalendarWeekYear);
+        
     } catch (error) {
-        console.error('Fehler beim Rückwärts-Button:', error);
+        console.error('Fehler bei Rückwärts-Navigation:', error);
+        showUserMessage('Fehler beim Laden des vorherigen Essensplans.');
     } finally {
-        // Aktualisiere die Buttons, unabhängig davon, ob ein Fehler auftritt oder nicht
+        // 4. Button-Zustände aktualisieren
         updateButtons();
+        console.log('=== BACKWARD NAVIGATION END ===');
     }
+}
+
+// Hilfsfunktion für Benutzernachrichten
+function showUserMessage(message) {
+    // Einfache Implementierung - kann später durch Toast/Modal ersetzt werden
+    console.warn('USER MESSAGE:', message);
+    // Temporär mit alert - später durch bessere UI ersetzen
+    // alert(message);
 }
 
 

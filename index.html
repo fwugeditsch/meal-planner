@@ -65,13 +65,13 @@
             <!-- section für Buttons, um zum vorherigen oder nächsten Mealplan zu gelangen und currentMealPlanHeader -->
             <section class="mealplan-header">
                 <!-- links vom Essensplan ein Button, um zum vorherigen Essensplan zu gelangen -->
-                <button id="previousMealPlan" onclick="handleBackwardButtonClick()">
+                <button id="previousMealPlan" onclick="handleBackwardButtonClick()" disabled>
                     <img src="img/white arrow left.png" alt="whiteArrowLeft" width="20" height="20">
                 </button>
                 <!-- Textfeld freihalten für den Text "Aktueller Essensplan für KW XX (XX.XX.XXXX - XX.XX.XXXX)" -->
                 <h2 id="currentMealPlanHeader"></h2>
                 <!-- rechts vom Essensplan ein Button, um zum nächsten Essensplan zu gelangen -->
-                <button id="nextMealPlan" onclick="handleForwardButtonClick()">
+                <button id="nextMealPlan" onclick="handleForwardButtonClick()" disabled>
                     <img src="img/white arrow right.png" alt="whiteArrowRight" width="20" height="20">
                 </button>
             </section>
@@ -116,33 +116,68 @@
         fillSeasonalIngredientsDropdown();
         fetchAvailableDishes();
     
-        // Es soll automatisch beim Laden der Seite der Mealplan für die aktuelle Woche angezeigt werden, sofern es einen gibt
-        // Datum im Format DD/MM/YYYY
-        const currentWeek = getCalendarWeek(currentDate); // Kalenderwoche ermitteln
-        const calendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate)); // Kalenderwoche und Jahr im Format JJJJWW ermitteln
-        // console.log("Das aktuelle Jahr und die aktuelle Kalenderwoche sind: " + calendarWeekYear);
-    
-        getMealPlanForWeek(calendarWeekYear) // Mealplan für die aktuelle Kalenderwoche ermitteln
-            .then((currentMealPlan) => {
-                if (currentMealPlan.length > 0) {
-
-                    currentMonday = getMonday(new Date()); // Montag der aktuellen Woche
-                    currentLastDay = addDays(currentMonday, currentMealPlan.length - 1); // letzter Tag des Mealplans
-                    document.getElementById("currentMealPlanHeader").innerHTML = "Aktueller Essensplan für KW " + currentWeek + " (" + formatDate(currentMonday) + " - " + formatDate(currentLastDay) + ")";
-                    // Ausgabe des aktuellen Mealplans
-                    // Der Mealplan wird nur angezeigt, wenn er vorhanden ist
-                    displayMealPlan(currentMealPlan);
-                    updateButtons();
-                    
-                    // console.log("Der aktuelle Mealplan wird angezeigt");
-                } else
-                    console.error("Für die aktuelle Woche gibt es keinen Mealplan");
+        // Initialisierung der Anwendung nach dem Laden der Seite
+        async function initializeApp() {
+            console.log('=== APP INITIALIZATION START ===');
+            
+            try {
+                // 1. Button-Styles initialisieren (standardmäßig deaktiviert)
+                initializeButtonStyles();
+                console.log('✓ Button-Styles initialisiert');
                 
-            })
-            .catch((error) => {
-                console.error("Fehler beim Laden des Mealplans für die aktuelle Woche: " + error);
-                // Handle Fehler, z.B. durch eine Benachrichtigung an den Benutzer
-            });
+                // 2. Gerichte laden
+                await fetchAvailableDishes();
+                console.log('✓ Gerichte geladen');
+                
+                // 3. Warten bis die Kalendergrenzen initialisiert sind
+                await initializeCalendarWeekYearLimits();
+                console.log('✓ Kalendergrenzen initialisiert');
+                
+                // 4. Aktuelle Woche ermitteln
+                const currentWeek = getCalendarWeek(currentDate);
+                const calendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate));
+                console.log('Aktuelle Woche:', currentWeek, 'CalendarWeekYear:', calendarWeekYear);
+        
+                // 5. Mealplan für aktuelle Woche laden
+                const currentMealPlan = await getMealPlanForWeek(calendarWeekYear);
+                console.log('Aktueller Mealplan geladen:', currentMealPlan.length, 'Gerichte');
+                
+                if (currentMealPlan.length > 0) {
+                    // Setze die aktuell angezeigte Kalenderwoche
+                    displayedCalendarWeekYear = calendarWeekYear;
+                    
+                    currentMonday = getMonday(new Date());
+                    currentLastDay = addDays(currentMonday, currentMealPlan.length - 1);
+                    document.getElementById("currentMealPlanHeader").innerHTML = "Aktueller Essensplan für KW " + currentWeek + " (" + formatDate(currentMonday) + " - " + formatDate(currentLastDay) + ")";
+                    
+                    displayMealPlan(currentMealPlan);
+                    console.log('✓ Aktueller Mealplan angezeigt');
+                } else {
+                    console.log('Für die aktuelle Woche gibt es keinen vollständigen Mealplan');
+                    displayedCalendarWeekYear = calendarWeekYear;
+                    document.getElementById("currentMealPlanHeader").innerHTML = "Kein Essensplan für KW " + currentWeek + " verfügbar";
+                }
+                
+                // 6. Button-Zustände setzen
+                updateButtons();
+                console.log('✓ Button-Zustände aktualisiert');
+                
+            } catch (error) {
+                console.error("Fehler bei der App-Initialisierung:", error);
+                // Fallback: Setze wenigstens die grundlegenden Werte
+                const calendarWeekYear = getCalendarWeekYear(getYear(currentDate), getCalendarWeek(currentDate));
+                displayedCalendarWeekYear = calendarWeekYear;
+                updateButtons();
+                
+                // Benutzer informieren
+                document.getElementById("currentMealPlanHeader").innerHTML = "Fehler beim Laden der Daten";
+            }
+            
+            console.log('=== APP INITIALIZATION END ===');
+        }
+        
+        // App initialisieren
+        initializeApp();
     </script>
     
 </body>
