@@ -5,19 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerichteverwaltung</title>
     
+    <link rel="stylesheet" href="common-styles.css">
+    <link rel="stylesheet" href="dishes-styles.css">
     <link rel="stylesheet" href="awesomplete.css">
-    <link rel="stylesheet" href="dishes_styles.css">
     <script src="awesomplete.js" async></script>
     <script src="script.js"></script>
 </head>
 <body>
     <header>
-        <h1>Gerichteverwaltung</h1>
+        <h1>
+            <p style="font-family: Georgia, 'Times New Roman', Times, serif; font-size: larger; color: white;">
+                Gerichteverwaltung
+            </p>
+        </h1>
     </header>
 
-    <main>
-        <section id="addDishForm" class="form">
-            <!-- neues Gericht hinzufügen weiße Schrift -->
+    <div class="page-container">
+        <main>
+        <section id="addDishForm" class="form content-section">
             <h2 class="addNewDishText">
                 Neues Gericht hinzufügen
             </h2>
@@ -31,21 +36,22 @@
             <button class="editNewDishButtons" onclick="addIngredientField()">Zutat hinzufügen</button>
         </section>
 
-        <button id="goBack" class="back-button" onclick="redirectToIndexPage()">Zurück zum Essensplaner</button>
-
-        <br><br>
-
-        <h2>Gespeicherte Gerichte</h2>
-
-        <br>
-
-        <!-- Section für das Suchfeld und die anschließenden Gerichte -->
-        <input type="text" id="dishSearch" placeholder="Gericht suchen">
-
-        <div id="dishesList" class="dish-list">
-            <!-- Gerichte werden hier dynamisch hinzugefügt -->
+        <div class="button-container">
+            <button id="goBack" class="back-button" onclick="redirectToIndexPage()">Zurück zum Essensplaner</button>
         </div>
-    </main>
+
+        <section class="dishes-section content-section">
+            <h2>Gespeicherte Gerichte</h2>
+
+            <!-- Section für das Suchfeld und die anschließenden Gerichte -->
+            <input type="text" id="dishSearch" placeholder="Gericht suchen">
+
+            <div id="dishesList" class="dish-list">
+                <!-- Gerichte werden hier dynamisch hinzugefügt -->
+            </div>
+        </section>
+        </main>
+    </div>
 
     
     <script>

@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        Essensplaner
-    </title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Essensplaner</title>
+    <link rel="stylesheet" href="common-styles.css">
+    <link rel="stylesheet" href="meal-planner-styles.css">
 
     <script src="weekPicker/jquery-1.12.4.min.js"></script>
     <script src="weekPicker/jquery-ui.min.js"></script>
@@ -15,18 +14,16 @@
 </head>
 <body>
     <header>
-        <!-- Edle Schriftart für den Titel verwenden-->
         <h1>
-            <p style="font-family: Georgia, 'Times New Roman', Times, serif; font-size: larger;color: white;">
+            <p style="font-family: Georgia, 'Times New Roman', Times, serif; font-size: larger; color: white;">
                 Essensplaner
             </p>
         </h1>
     </header>
 
-    <br>
-
-    <main>
-        <section class="settings">
+    <div class="page-container">
+        <main>
+        <section class="settings content-section">
             <label for="days">Anzahl der Tage:</label>
             <select id="days">
                 <option value="1">1 Tag</option>
@@ -37,7 +34,7 @@
                 <option value="6">6 Tage</option>
                 <option value="7">7 Tage</option>
             </select>
-            <br>
+            
             <label for="seasonal">Anzahl der Tage mit saisonalen Zutaten:</label>
             <select id="seasonal">
                 <option value="0" selected>0 Tage</option>
@@ -51,7 +48,7 @@
             </select>
         </section>
 
-        <section class="ingredients">
+        <section class="ingredients content-section">
             <h2>Saisonale Zutaten:</h2>
             <select id="seasonalIngredients" multiple>
                 <!-- Hier werden die Zutaten dynamisch hinzugefügt -->
@@ -109,7 +106,8 @@
             </div>
         </div>
 
-    </main>
+        </main>
+    </div>
 
     <script src="script.js"></script>
     <script>
